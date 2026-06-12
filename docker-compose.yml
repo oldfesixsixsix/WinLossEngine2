@@ -6,6 +6,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./win-loss-data:/app/data
+      - ./public/defaults:/app/public/defaults
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production

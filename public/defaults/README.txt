@@ -11,8 +11,8 @@ Place your custom sound files directly inside the `./sounds/` directory. Must us
 請將您的音效檔案放置至 `./sounds/` 資料夾，並依照指定的檔名進行配置：
 
 1. `bgm.mp3`         - Background Loop Track (背景循環配樂)
-2. `win.mp3`         - Victory/Win Theme audio (戰勝/贏戰吼音效)
-3. `loss.mp3`        - Lose/Failure Theme audio (戰敗/輸戰吼音效)
+2. `win.mp3`         - Victory/Win Theme audio (戰勝音效)
+3. `loss.mp3`        - Lose/Failure Theme audio (戰敗音效)
 4. `tab.mp3`         - Bottom tab navigation select (頁籤切換音效)
 5. `select_win.mp3`  - Selecting "WIN" Hero card (在紀錄頁選擇 WIN 卡片音效)
 6. `select_loss.mp3` - Selecting "LOSS" Hero card (在紀錄頁選擇 LOSS 卡片音效)
@@ -26,8 +26,8 @@ Place your custom sound files directly inside the `./sounds/` directory. Must us
 Place your default meme images directly inside the `./images/` directory:
 請將您的梗圖放置至 `./images/` 資料夾中，並使用以下名稱：
 
-1. `rockman_win.png` - Used when a "WIN" outcome is recorded/selected (預設獲勝梗圖)
-2. `zero_lose.png`   - Used when a "LOSS" outcome is recorded/selected (預設失敗梗圖)
-3. `tie_meme.png`    - Used when a "DRAW" outcome is recorded/selected (預設平手梗圖)
+1. `win.jpg` - Used when a "WIN" outcome is recorded/selected (預設獲勝梗圖)
+2. `lose.jpg`   - Used when a "LOSS" outcome is recorded/selected (預設失敗梗圖)
+3. `tie.jpg`    - Used when a "DRAW" outcome is recorded/selected (預設平手梗圖)
 
 *(These will be copied automatically on server boot if not already present. You can replace them anytime with your own files!)*

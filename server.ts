@@ -16,11 +16,9 @@ try {
   myDirname = __dirname;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const ASSETS_DIR = path.join(DATA_DIR, 'assets');
-const PUBLIC_DEFAULTS_DIR = path.join(process.cwd(), 'public', 'defaults');
-const PUBLIC_IMAGES_DIR = path.join(PUBLIC_DEFAULTS_DIR, 'images');
-const PUBLIC_SOUNDS_DIR = path.join(PUBLIC_DEFAULTS_DIR, 'sounds');
+const DATA_DIR = path.join(process.cwd(), 'public', 'defaults');
+const ASSETS_DIR = path.join(DATA_DIR, 'images');
+const SOUNDS_DIR = path.join(DATA_DIR, 'sounds');
 
 // Ensure database and assets directories exist
 if (!fs.existsSync(DATA_DIR)) {
@@ -29,42 +27,27 @@ if (!fs.existsSync(DATA_DIR)) {
 if (!fs.existsSync(ASSETS_DIR)) {
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
 }
-if (!fs.existsSync(PUBLIC_IMAGES_DIR)) {
-  fs.mkdirSync(PUBLIC_IMAGES_DIR, { recursive: true });
-}
-if (!fs.existsSync(PUBLIC_SOUNDS_DIR)) {
-  fs.mkdirSync(PUBLIC_SOUNDS_DIR, { recursive: true });
+if (!fs.existsSync(SOUNDS_DIR)) {
+  fs.mkdirSync(SOUNDS_DIR, { recursive: true });
 }
 
-// Copy default pre-generated pixel art images to persistent data/assets folder and public defaults folder
+// Copy default pre-generated pixel art images to defaults folder
 const defaultMapping = [
-  { src: 'rockman_win_1781102046763.png', dest: 'rockman_win.png', uploadDest: 'rockman_win.png' },
-  { src: 'zero_lose_1781102061526.png', dest: 'zero_lose.png', uploadDest: 'zero_lose.png' },
-  { src: 'tie_meme_1781102077141.png', dest: 'tie_meme.png', uploadDest: 'tie_meme.png' }
+  { src: 'rockman_win_1781102046763.png', dest: 'win.jpg' },
+  { src: 'zero_lose_1781102061526.png', dest: 'loss.jpg' },
+  { src: 'tie_meme_1781102077141.png', dest: 'tie.jpg' }
 ];
 
 for (const map of defaultMapping) {
   const sourcePath = path.join(process.cwd(), 'src', 'assets', 'images', map.src);
+  const targetPath = path.join(ASSETS_DIR, map.dest);
   if (fs.existsSync(sourcePath)) {
-    // Copy to persistent data assets
-    const targetUploadPath = path.join(ASSETS_DIR, map.uploadDest);
-    if (!fs.existsSync(targetUploadPath)) {
+    if (!fs.existsSync(targetPath)) {
       try {
-        fs.copyFileSync(sourcePath, targetUploadPath);
-        console.log(`Copied default image ${map.src} to persistent: ${targetUploadPath}`);
+        fs.copyFileSync(sourcePath, targetPath);
+        console.log(`Copied default image ${map.src} to ${targetPath}`);
       } catch (err) {
-        console.error(`Failed to copy to persistent: ${map.src}`, err);
-      }
-    }
-
-    // Copy to public defaults images
-    const targetPublicPath = path.join(PUBLIC_IMAGES_DIR, map.dest);
-    if (!fs.existsSync(targetPublicPath)) {
-      try {
-        fs.copyFileSync(sourcePath, targetPublicPath);
-        console.log(`Copied default image ${map.src} to public defaults: ${targetPublicPath}`);
-      } catch (err) {
-        console.error(`Failed to copy to public defaults: ${map.src}`, err);
+        console.error(`Failed to copy default image ${map.src}`, err);
       }
     }
   }
@@ -84,24 +67,43 @@ class JsonDatabase {
     if (!fs.existsSync(this.recordsFile)) {
       fs.writeFileSync(this.recordsFile, JSON.stringify([], null, 2), 'utf-8');
     }
-    if (!fs.existsSync(this.settingsFile)) {
-      const defaultSettings = [
-        { key: 'win_meme_url', value: '/uploads/rockman_win.png' },
-        { key: 'win_meme_quote', value: '不愧是你！|Excellent work!|さすがですね！' },
-        { key: 'loss_meme_url', value: '/uploads/zero_lose.png' },
-        { key: 'loss_meme_quote', value: '投降輸一半|Mission Failed...|何者なんだ、これ...' },
-        { key: 'draw_meme_url', value: '/uploads/tie_meme.png' },
-        { key: 'draw_meme_quote', value: '沒輸沒贏|Double KO!|勝負つかず...' },
-        { key: 'lang', value: 'ja' },
-        { key: 'bgm_path', value: '' },
-        { key: 'win_sound_path', value: '' },
-        { key: 'loss_sound_path', value: '' }
-      ];
-      const settingsObj: Record<string, string> = {};
-      defaultSettings.forEach(s => {
-        settingsObj[s.key] = s.value;
-      });
-      fs.writeFileSync(this.settingsFile, JSON.stringify(settingsObj, null, 2), 'utf-8');
+    
+    const defaultSettings = [
+      { key: 'win_meme_url', value: '/defaults/images/win.jpg' },
+      { key: 'win_meme_quote', value: '麻了！完全掌握|Dominance established.|さすがですね！' },
+      { key: 'loss_meme_url', value: '/defaults/images/loss.jpg' },
+      { key: 'loss_meme_quote', value: '大意了，沒有閃|You activated their trap card...|私の...完全なる敗北だ...' },
+      { key: 'draw_meme_url', value: '/defaults/images/tie.jpg' },
+      { key: 'draw_meme_quote', value: '下次一定|Break even, barely.|奇跡 勝負つかず...' },
+      { key: 'lang', value: 'ja' },
+      { key: 'bgm_path', value: '/defaults/sounds/bgm.mp3' },
+      { key: 'win_sound_path', value: '/defaults/sounds/tab.mp3' },
+      { key: 'loss_sound_path', value: '/defaults/sounds/tab.mp3' },
+      { key: 'tab_sound_path', value: '/defaults/sounds/tab.mp3' },
+      { key: 'submit_sound_path', value: '/defaults/sounds/submit.mp3' },
+      { key: 'select_win_sound_path', value: '/defaults/sounds/winloss.mp3' },
+      { key: 'select_loss_sound_path', value: '/defaults/sounds/winloss.mp3' }
+    ];
+
+    let currentSettings: Record<string, string> = {};
+    if (fs.existsSync(this.settingsFile)) {
+      try {
+        currentSettings = JSON.parse(fs.readFileSync(this.settingsFile, 'utf-8'));
+      } catch (e) {
+        currentSettings = {};
+      }
+    }
+
+    let modified = false;
+    defaultSettings.forEach(s => {
+      if (!(s.key in currentSettings)) {
+        currentSettings[s.key] = s.value;
+        modified = true;
+      }
+    });
+
+    if (modified || !fs.existsSync(this.settingsFile)) {
+      fs.writeFileSync(this.settingsFile, JSON.stringify(currentSettings, null, 2), 'utf-8');
     }
   }
 
@@ -232,6 +234,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve custom user-uploaded assets from the data folder
 app.use('/uploads', express.static(ASSETS_DIR));
+// Serve persistent default assets from the data folder (avoids stale files in dist/ during production)
+app.use('/defaults', express.static(DATA_DIR));
 
 // Configure Multer storage
 const storage = multer.diskStorage({
@@ -291,7 +295,7 @@ app.delete('/api/records/:id', (req, res) => {
       const filename = path.basename(record.image_path);
       const filePath = path.join(ASSETS_DIR, filename);
       // Only delete if it's not our default pre-installed assets
-      if (fs.existsSync(filePath) && !['rockman_win.png', 'zero_lose.png', 'tie_meme.png'].includes(filename)) {
+      if (fs.existsSync(filePath) && !['win.jpg', 'loss.jpg', 'tie.jpg'].includes(filename)) {
         fs.unlink(filePath, (unlinkErr) => {
           if (unlinkErr) console.warn('Could not delete file:', filePath);
         });
