@@ -71,7 +71,11 @@ const TRANSLATIONS = {
     confirmDelete: "削除の確認：この決闘記録をSQLiteデータベースから永久に削除しますか？",
     alertDeleteFailure: "エラー：サーバーが削除リクエストを拒否しました。",
     noRecordsYet: "記録がまだありません。上のボタンから決闘結果を記録しましょう！",
-    lightboxMeta: "決闘証拠アタッチメント"
+    lightboxMeta: "決闘証拠アタッチメント",
+    tabSe: "下部タブ切替SE音:",
+    selectWinSe: "記録-勝利選択SE音:",
+    selectLossSe: "記録-敗北選択SE音:",
+    submitSe: "登録・保存SE音:"
   },
   'zh-TW': {
     headerStage: "ST-04: 梗圖戰場",
@@ -142,7 +146,11 @@ const TRANSLATIONS = {
     confirmDelete: "確認消除：您確定要從 SQLite 資料庫中永久移除此筆決鬥紀錄嗎？",
     alertDeleteFailure: "操作失敗：伺服器拒絕了該筆紀錄的刪除請求。",
     noRecordsYet: "尚未登錄任何決鬥紀錄。請在上方登錄今日的輸贏吧！",
-    lightboxMeta: "決鬥現場實體憑證"
+    lightboxMeta: "決鬥現場實體憑證",
+    tabSe: "下方頁籤切換音效:",
+    selectWinSe: "紀錄 WIN 選擇音效:",
+    selectLossSe: "紀錄 LOSS 選擇音效:",
+    submitSe: "登錄提交儲存音效:"
   },
   'zh-CN': {
     headerStage: "ST-04: 梗图战场",
@@ -213,7 +221,11 @@ const TRANSLATIONS = {
     confirmDelete: "确认消除：您确定要从 SQLite 数据库中永久移除此笔决斗纪录吗？",
     alertDeleteFailure: "操作失败：服务器拒绝了该笔纪录的删除请求。",
     noRecordsYet: "尚未登录任何决斗纪录。请在上方登录今日的输赢吧！",
-    lightboxMeta: "决斗现场实体凭证"
+    lightboxMeta: "决斗现场实体凭证",
+    tabSe: "下方面签切换音效:",
+    selectWinSe: "记录 WIN 选择音效:",
+    selectLossSe: "记录 LOSS 选择音效:",
+    submitSe: "登录提交保存音效:"
   },
   en: {
     headerStage: "ST-04: MEME ARENA",
@@ -284,7 +296,30 @@ const TRANSLATIONS = {
     confirmDelete: "CONFIRM ELIMINATION: Erase this record from SQLite database permanently?",
     alertDeleteFailure: "Failure: Server rejected deletion request.",
     noRecordsYet: "NO RECORDS RECORDED YET. GET YOUR DUEL STARTED ABOVE!",
-    lightboxMeta: "RECORD ATTACHMENT"
+    lightboxMeta: "RECORD ATTACHMENT",
+    tabSe: "Bottom Tab Select SE:",
+    selectWinSe: "Record WIN Select SE:",
+    selectLossSe: "Record LOSS Select SE:",
+    submitSe: "Submit & Save SE:"
+  }
+};
+
+// Exception-safe LocalStorage utility wrapper
+const safeStorage = {
+  getItem(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn('LocalStorage is blocked or non-accessible:', e);
+      return null;
+    }
+  },
+  setItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn('LocalStorage is blocked or non-accessible:', e);
+    }
   }
 };
 
@@ -351,14 +386,32 @@ function safeSetImgSrc(id, src) {
   }
 }
 
+async function safeParseJson(response) {
+  try {
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.warn('[X4 API Warning] Expected JSON but received:', contentType, text.substring(0, 150));
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    console.error('[X4 API Error] Failed to parse JSON:', err);
+    return null;
+  }
+}
+
 async function loadSettingsFromServer() {
   try {
     const response = await fetch('/api/settings');
     if (response.ok) {
-      backendSettings = await response.json();
+      const data = await safeParseJson(response);
+      if (data) {
+        backendSettings = data;
+      }
       
       // Preserve active language stored in localStorage, fallback to backend setting or 'ja'
-      const savedLocal = localStorage.getItem('app_lang');
+      const savedLocal = safeStorage.getItem('app_lang');
       currentLang = savedLocal || backendSettings.lang || 'ja';
       
       // Update selections without overriding selectedOutcome
@@ -389,9 +442,12 @@ async function refreshRecords() {
   try {
     const response = await fetch('/api/records');
     if (response.ok) {
-      scoreRecordsList = await response.json();
-      renderTimelineLayout();
-      updateStatisticsMetrics('day'); // default
+      const data = await safeParseJson(response);
+      if (data) {
+        scoreRecordsList = data;
+        renderTimelineLayout();
+        updateStatisticsMetrics('day'); // default
+      }
     }
   } catch (err) {
     console.error('Failed to refresh records:', err);
@@ -456,6 +512,10 @@ function applyLocalizationBundle() {
   safeSetInnerText('set-lbl-bgm', dictionary.bgmUrl);
   safeSetInnerText('set-lbl-win-se', dictionary.winSe);
   safeSetInnerText('set-lbl-loss-se', dictionary.lossSe);
+  safeSetInnerText('set-lbl-tab-se', dictionary.tabSe);
+  safeSetInnerText('set-lbl-select-win-se', dictionary.selectWinSe);
+  safeSetInnerText('set-lbl-select-loss-se', dictionary.selectLossSe);
+  safeSetInnerText('set-lbl-submit-se', dictionary.submitSe);
 
   // Footer Navigation Bar
   const isChinese = currentLang === 'zh-TW' || currentLang === 'zh-CN';
@@ -500,7 +560,7 @@ function initMainEventBindings() {
     btn.addEventListener('click', () => {
       const tabTarget = btn.getAttribute('data-tab');
       switchActiveTab(tabTarget);
-      playSynthesizedTick(); // click interface sound
+      playTabSelectSound(); // click interface tab sound
     });
   });
 
@@ -520,7 +580,7 @@ function initMainEventBindings() {
     }
     document.getElementById('rec-prompt').innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).recPrompt;
     document.getElementById('rec-prompt').style.color = '#00f2ff';
-    playSynthesizedTick();
+    playRecordSelectWinSound();
   });
 
   lossHeroPanel.addEventListener('click', () => {
@@ -534,7 +594,7 @@ function initMainEventBindings() {
     }
     document.getElementById('rec-prompt').innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).recPrompt;
     document.getElementById('rec-prompt').style.color = '#00f2ff';
-    playSynthesizedTick();
+    playRecordSelectLossSound();
   });
 
   if (drawSecButton) {
@@ -594,7 +654,9 @@ function initMainEventBindings() {
       });
 
       if (response.ok) {
-        // Play epic result sound
+        // Play submit success chime and epic result sound
+        playSubmitSaveSound();
+        
         if (selectedOutcome === 'win') {
           playResultTheme(true);
         } else if (selectedOutcome === 'loss') {
@@ -656,7 +718,7 @@ function initMainEventBindings() {
   // Settings Lang Select change
   document.getElementById('select-lang').addEventListener('change', (e) => {
     currentLang = e.target.value;
-    localStorage.setItem('app_lang', currentLang);
+    safeStorage.setItem('app_lang', currentLang);
     applyLocalizationBundle();
     playSynthesizedTick();
   });
@@ -684,12 +746,12 @@ function initMainEventBindings() {
 
       if (response.ok) {
         currentLang = langVal;
-        localStorage.setItem('app_lang', currentLang);
+        safeStorage.setItem('app_lang', currentLang);
         backendSettings.win_meme_quote = quoteWin;
         backendSettings.draw_meme_quote = quoteDraw;
         backendSettings.loss_meme_quote = quoteLoss;
         applyLocalizationBundle();
-        playSynthesizedWinSound();
+        playSubmitSaveSound();
         alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertTextSavedSuccess);
       }
     } catch (err) {
@@ -714,11 +776,16 @@ function initMainEventBindings() {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsSuccess);
-        await loadSettingsFromServer();
-        // Clear file selections
-        assetsForm.reset();
+        const result = await safeParseJson(response);
+        if (result) {
+          playSubmitSaveSound();
+          alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsSuccess);
+          await loadSettingsFromServer();
+          // Clear file selections
+          assetsForm.reset();
+        } else {
+          alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsReject);
+        }
       } else {
         alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsReject);
       }
@@ -1088,6 +1155,151 @@ function playSynthesizedTick() {
   gain.connect(ctx.destination);
   osc.start();
   osc.stop(ctx.currentTime + 0.06);
+}
+
+// Snappy arcade selection sound for WIN
+function playSynthesizedSelectWinSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  const ctx = new AudioContextClass();
+  const now = ctx.currentTime;
+  
+  // Quick double ascending high pitches
+  const pitches = [523.25, 659.25, 783.99]; // C5, E5, G5
+  pitches.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+    
+    gain.gain.setValueAtTime(0.07, now + idx * 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + (idx + 1) * 0.06);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(now + idx * 0.06);
+    osc.stop(now + (idx + 1) * 0.06 + 0.03);
+  });
+}
+
+// Low buzz selection sound for LOSS
+function playSynthesizedSelectLossSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  const ctx = new AudioContextClass();
+  const now = ctx.currentTime;
+  
+  // Quick descending flat warm alarm buzz
+  const pitches = [293.66, 220.00]; // D4, A3
+  pitches.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+    
+    gain.gain.setValueAtTime(0.06, now + idx * 0.09);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + (idx + 1) * 0.09);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(now + idx * 0.09);
+    osc.stop(now + (idx + 1) * 0.09 + 0.03);
+  });
+}
+
+// Custom and fallback audio players for newly requested features
+function playTabSelectSound() {
+  if (backendSettings && backendSettings.tab_sound_path) {
+    const audio = new Audio(backendSettings.tab_sound_path);
+    audio.volume = 0.55;
+    audio.play().catch(() => playSynthesizedTabSound());
+  } else {
+    playSynthesizedTabSound();
+  }
+}
+
+function playSynthesizedTabSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  const ctx = new AudioContextClass();
+  const now = ctx.currentTime;
+  
+  // High-pitch sci-fi bubble blip
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(600, now);
+  osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+  
+  gain.gain.setValueAtTime(0.05, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+  
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  
+  osc.start(now);
+  osc.stop(now + 0.09);
+}
+
+function playRecordSelectWinSound() {
+  if (backendSettings && backendSettings.select_win_sound_path) {
+    const audio = new Audio(backendSettings.select_win_sound_path);
+    audio.volume = 0.55;
+    audio.play().catch(() => playSynthesizedSelectWinSound());
+  } else {
+    playSynthesizedSelectWinSound();
+  }
+}
+
+function playRecordSelectLossSound() {
+  if (backendSettings && backendSettings.select_loss_sound_path) {
+    const audio = new Audio(backendSettings.select_loss_sound_path);
+    audio.volume = 0.55;
+    audio.play().catch(() => playSynthesizedSelectLossSound());
+  } else {
+    playSynthesizedSelectLossSound();
+  }
+}
+
+function playSubmitSaveSound() {
+  if (backendSettings && backendSettings.submit_sound_path) {
+    const audio = new Audio(backendSettings.submit_sound_path);
+    audio.volume = 0.55;
+    audio.play().catch(() => playSynthesizedSubmitSaveSound());
+  } else {
+    playSynthesizedSubmitSaveSound();
+  }
+}
+
+function playSynthesizedSubmitSaveSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  const ctx = new AudioContextClass();
+  const now = ctx.currentTime;
+  
+  // Beautiful retro RPG/arcade success chime
+  const frequencies = [330, 392, 660, 784]; // E4, G4, E5, G5
+  frequencies.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+    
+    gain.gain.setValueAtTime(0.06, now + idx * 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.15);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(now + idx * 0.05);
+    osc.stop(now + idx * 0.05 + 0.18);
+  });
 }
 
 // Play custom sound files if present, otherwise trigger synth oscillators

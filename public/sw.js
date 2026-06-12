@@ -5,7 +5,7 @@ const PRECACHE_RESOURCES = [
   '/index.html',
   '/src/app.js',
   '/src/index.css',
-  '/public/manifest.json',
+  '/manifest.json',
   '/uploads/rockman_win.png',
   '/uploads/zero_lose.png',
   '/uploads/tie_meme.png'

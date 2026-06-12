@@ -228,6 +228,11 @@ const upload = multer({ storage });
 
 // API Endpoints
 
+// GET health status check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // GET all records
 app.get('/api/records', (req, res) => {
   try {
@@ -309,7 +314,11 @@ app.post('/api/settings/assets', upload.fields([
   { name: 'draw_meme_image', maxCount: 1 },
   { name: 'bgm_file', maxCount: 1 },
   { name: 'win_sound_file', maxCount: 1 },
-  { name: 'loss_sound_file', maxCount: 1 }
+  { name: 'loss_sound_file', maxCount: 1 },
+  { name: 'tab_sound_file', maxCount: 1 },
+  { name: 'select_win_sound_file', maxCount: 1 },
+  { name: 'select_loss_sound_file', maxCount: 1 },
+  { name: 'submit_sound_file', maxCount: 1 }
 ]), (req, res) => {
   const filesObj = req.files as Record<string, Express.Multer.File[]>;
   if (!filesObj) {
@@ -335,6 +344,18 @@ app.post('/api/settings/assets', upload.fields([
   }
   if (filesObj['loss_sound_file']) {
     updates['loss_sound_path'] = `/uploads/${filesObj['loss_sound_file'][0].filename}`;
+  }
+  if (filesObj['tab_sound_file']) {
+    updates['tab_sound_path'] = `/uploads/${filesObj['tab_sound_file'][0].filename}`;
+  }
+  if (filesObj['select_win_sound_file']) {
+    updates['select_win_sound_path'] = `/uploads/${filesObj['select_win_sound_file'][0].filename}`;
+  }
+  if (filesObj['select_loss_sound_file']) {
+    updates['select_loss_sound_path'] = `/uploads/${filesObj['select_loss_sound_file'][0].filename}`;
+  }
+  if (filesObj['submit_sound_file']) {
+    updates['submit_sound_path'] = `/uploads/${filesObj['submit_sound_file'][0].filename}`;
   }
 
   try {
@@ -371,7 +392,11 @@ async function start() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (req, res, next) => {
+      // Direct pass-through for express API routes and uploaded file static assets in production
+      if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+        return next();
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
