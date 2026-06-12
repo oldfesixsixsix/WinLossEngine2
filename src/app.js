@@ -423,12 +423,8 @@ async function loadSettingsFromServer() {
       safeSetInputValue('set-quote-loss', backendSettings.loss_meme_quote || '');
 
       // Update default display pictures if they changed
-      if (backendSettings.win_meme_url) {
-        safeSetImgSrc('display-win-image', backendSettings.win_meme_url);
-      }
-      if (backendSettings.loss_meme_url) {
-        safeSetImgSrc('display-loss-image', backendSettings.loss_meme_url);
-      }
+      safeSetImgSrc('display-win-image', backendSettings.win_meme_url || '/defaults/images/rockman_win.png');
+      safeSetImgSrc('display-loss-image', backendSettings.loss_meme_url || '/defaults/images/zero_lose.png');
 
       applyLocalizationBundle();
     }
@@ -1006,7 +1002,7 @@ function updateStatisticsMetrics(period = 'day') {
 
   if (wins > losses) {
     // Win Status
-    if (memeImg) memeImg.src = backendSettings.win_meme_url || '/uploads/rockman_win.png';
+    if (memeImg) memeImg.src = backendSettings.win_meme_url || '/defaults/images/rockman_win.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusWin;
       badgeSpan.style.color = '#00f2ff';
@@ -1018,7 +1014,7 @@ function updateStatisticsMetrics(period = 'day') {
     if (quoteDiv) quoteDiv.innerText = `"${activeQuote}"`;
   } else if (wins < losses) {
     // Loss Status
-    if (memeImg) memeImg.src = backendSettings.loss_meme_url || '/uploads/zero_lose.png';
+    if (memeImg) memeImg.src = backendSettings.loss_meme_url || '/defaults/images/zero_lose.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusLoss;
       badgeSpan.style.color = '#ff0055';
@@ -1030,7 +1026,7 @@ function updateStatisticsMetrics(period = 'day') {
     if (quoteDiv) quoteDiv.innerText = `"${activeQuote}"`;
   } else {
     // Equal Draw Status (including 0 records)
-    if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/uploads/tie_meme.png';
+    if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/defaults/images/tie_meme.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusEqual;
       badgeSpan.style.color = '#d63bff';
@@ -1213,13 +1209,10 @@ function playSynthesizedSelectLossSound() {
 
 // Custom and fallback audio players for newly requested features
 function playTabSelectSound() {
-  if (backendSettings && backendSettings.tab_sound_path) {
-    const audio = new Audio(backendSettings.tab_sound_path);
-    audio.volume = 0.55;
-    audio.play().catch(() => playSynthesizedTabSound());
-  } else {
-    playSynthesizedTabSound();
-  }
+  const chosenPath = (backendSettings && backendSettings.tab_sound_path) || '/defaults/sounds/tab.mp3';
+  const audio = new Audio(chosenPath);
+  audio.volume = 0.55;
+  audio.play().catch(() => playSynthesizedTabSound());
 }
 
 function playSynthesizedTabSound() {
@@ -1247,33 +1240,24 @@ function playSynthesizedTabSound() {
 }
 
 function playRecordSelectWinSound() {
-  if (backendSettings && backendSettings.select_win_sound_path) {
-    const audio = new Audio(backendSettings.select_win_sound_path);
-    audio.volume = 0.55;
-    audio.play().catch(() => playSynthesizedSelectWinSound());
-  } else {
-    playSynthesizedSelectWinSound();
-  }
+  const chosenPath = (backendSettings && backendSettings.select_win_sound_path) || '/defaults/sounds/select_win.mp3';
+  const audio = new Audio(chosenPath);
+  audio.volume = 0.55;
+  audio.play().catch(() => playSynthesizedSelectWinSound());
 }
 
 function playRecordSelectLossSound() {
-  if (backendSettings && backendSettings.select_loss_sound_path) {
-    const audio = new Audio(backendSettings.select_loss_sound_path);
-    audio.volume = 0.55;
-    audio.play().catch(() => playSynthesizedSelectLossSound());
-  } else {
-    playSynthesizedSelectLossSound();
-  }
+  const chosenPath = (backendSettings && backendSettings.select_loss_sound_path) || '/defaults/sounds/select_loss.mp3';
+  const audio = new Audio(chosenPath);
+  audio.volume = 0.55;
+  audio.play().catch(() => playSynthesizedSelectLossSound());
 }
 
 function playSubmitSaveSound() {
-  if (backendSettings && backendSettings.submit_sound_path) {
-    const audio = new Audio(backendSettings.submit_sound_path);
-    audio.volume = 0.55;
-    audio.play().catch(() => playSynthesizedSubmitSaveSound());
-  } else {
-    playSynthesizedSubmitSaveSound();
-  }
+  const chosenPath = (backendSettings && backendSettings.submit_sound_path) || '/defaults/sounds/submit.mp3';
+  const audio = new Audio(chosenPath);
+  audio.volume = 0.55;
+  audio.play().catch(() => playSynthesizedSubmitSaveSound());
 }
 
 function playSynthesizedSubmitSaveSound() {
@@ -1305,41 +1289,43 @@ function playSynthesizedSubmitSaveSound() {
 // Play custom sound files if present, otherwise trigger synth oscillators
 function playResultTheme(isWin) {
   if (isWin) {
-    if (backendSettings.win_sound_path) {
-      const audio = new Audio(backendSettings.win_sound_path);
-      audio.volume = 0.55;
-      audio.play().catch(() => playSynthesizedWinSound());
-    } else {
-      playSynthesizedWinSound();
-    }
+    const chosenPath = backendSettings.win_sound_path || '/defaults/sounds/win.mp3';
+    const audio = new Audio(chosenPath);
+    audio.volume = 0.55;
+    audio.play().catch(() => playSynthesizedWinSound());
   } else {
-    if (backendSettings.loss_sound_path) {
-      const audio = new Audio(backendSettings.loss_sound_path);
-      audio.volume = 0.55;
-      audio.play().catch(() => playSynthesizedLossSound());
-    } else {
-      playSynthesizedLossSound();
-    }
+    const chosenPath = backendSettings.loss_sound_path || '/defaults/sounds/loss.mp3';
+    const audio = new Audio(chosenPath);
+    audio.volume = 0.55;
+    audio.play().catch(() => playSynthesizedLossSound());
   }
 }
 
 // Start BGM Loop
 function startLoopingMusic() {
-  // If user uploaded a custom background track, stream it directly
-  if (backendSettings.bgm_path) {
-    if (customBgmInstance) {
-      customBgmInstance.pause();
-    }
-    customBgmInstance = new Audio(backendSettings.bgm_path);
-    customBgmInstance.loop = true;
-    customBgmInstance.volume = 0.35;
-    customBgmInstance.play().catch(err => {
-      console.warn('Browser policy blocked custom file autoplay. Fallbacking to Synth:', err);
-      playSynthBgmContinuous();
-    });
-  } else {
-    playSynthBgmContinuous();
+  if (customBgmInstance) {
+    customBgmInstance.pause();
   }
+  const bgmPath = backendSettings.bgm_path || '/defaults/sounds/bgm.mp3';
+  customBgmInstance = new Audio(bgmPath);
+  customBgmInstance.loop = true;
+  customBgmInstance.volume = 0.35;
+
+  let fallbackTriggered = false;
+  const triggerFallback = () => {
+    if (fallbackTriggered) return;
+    fallbackTriggered = true;
+    playSynthBgmContinuous();
+  };
+
+  customBgmInstance.addEventListener('error', () => {
+    triggerFallback();
+  });
+
+  customBgmInstance.play().catch(err => {
+    console.warn('BGM path playback failed (might be 404 or gesture constraint). Fallbacking to Synth:', err);
+    triggerFallback();
+  });
 }
 
 // Stop BGM Loop

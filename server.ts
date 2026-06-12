@@ -18,6 +18,9 @@ try {
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const ASSETS_DIR = path.join(DATA_DIR, 'assets');
+const PUBLIC_DEFAULTS_DIR = path.join(process.cwd(), 'public', 'defaults');
+const PUBLIC_IMAGES_DIR = path.join(PUBLIC_DEFAULTS_DIR, 'images');
+const PUBLIC_SOUNDS_DIR = path.join(PUBLIC_DEFAULTS_DIR, 'sounds');
 
 // Ensure database and assets directories exist
 if (!fs.existsSync(DATA_DIR)) {
@@ -26,24 +29,42 @@ if (!fs.existsSync(DATA_DIR)) {
 if (!fs.existsSync(ASSETS_DIR)) {
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
 }
+if (!fs.existsSync(PUBLIC_IMAGES_DIR)) {
+  fs.mkdirSync(PUBLIC_IMAGES_DIR, { recursive: true });
+}
+if (!fs.existsSync(PUBLIC_SOUNDS_DIR)) {
+  fs.mkdirSync(PUBLIC_SOUNDS_DIR, { recursive: true });
+}
 
-// Copy default pre-generated pixel art images to persistent data/assets folder
+// Copy default pre-generated pixel art images to persistent data/assets folder and public defaults folder
 const defaultMapping = [
-  { src: 'rockman_win_1781102046763.png', dest: 'rockman_win.png' },
-  { src: 'zero_lose_1781102061526.png', dest: 'zero_lose.png' },
-  { src: 'tie_meme_1781102077141.png', dest: 'tie_meme.png' }
+  { src: 'rockman_win_1781102046763.png', dest: 'rockman_win.png', uploadDest: 'rockman_win.png' },
+  { src: 'zero_lose_1781102061526.png', dest: 'zero_lose.png', uploadDest: 'zero_lose.png' },
+  { src: 'tie_meme_1781102077141.png', dest: 'tie_meme.png', uploadDest: 'tie_meme.png' }
 ];
 
 for (const map of defaultMapping) {
   const sourcePath = path.join(process.cwd(), 'src', 'assets', 'images', map.src);
-  const targetPath = path.join(ASSETS_DIR, map.dest);
   if (fs.existsSync(sourcePath)) {
-    if (!fs.existsSync(targetPath)) {
+    // Copy to persistent data assets
+    const targetUploadPath = path.join(ASSETS_DIR, map.uploadDest);
+    if (!fs.existsSync(targetUploadPath)) {
       try {
-        fs.copyFileSync(sourcePath, targetPath);
-        console.log(`Copied default image ${map.src} to ${targetPath}`);
+        fs.copyFileSync(sourcePath, targetUploadPath);
+        console.log(`Copied default image ${map.src} to persistent: ${targetUploadPath}`);
       } catch (err) {
-        console.error(`Failed to copy default image ${map.src}`, err);
+        console.error(`Failed to copy to persistent: ${map.src}`, err);
+      }
+    }
+
+    // Copy to public defaults images
+    const targetPublicPath = path.join(PUBLIC_IMAGES_DIR, map.dest);
+    if (!fs.existsSync(targetPublicPath)) {
+      try {
+        fs.copyFileSync(sourcePath, targetPublicPath);
+        console.log(`Copied default image ${map.src} to public defaults: ${targetPublicPath}`);
+      } catch (err) {
+        console.error(`Failed to copy to public defaults: ${map.src}`, err);
       }
     }
   }
