@@ -1,0 +1,355 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-pixel: "Press Start 2P", "Silkscreen", monospace;
+  --font-vt: "VT323", monospace;
+}
+
+/* Custom retro styling and animations */
+
+body {
+  font-family: var(--font-pixel);
+  background-color: #050b18;
+  color: #e0faff;
+  overflow-x: hidden;
+  image-rendering: pixelated;
+}
+
+/* Retro Futuristic Scrolling Matrix Grid Background with Immersive UI details */
+.retro-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background-color: #050b18;
+  background-image: 
+    linear-gradient(to right, rgba(0, 242, 254, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center;
+  animation: bg-scroll 25s linear infinite;
+}
+
+/* Slanted circuitry lines in the background */
+.retro-circuits {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.15;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #00f2ff,
+    #00f2ff 2px,
+    transparent 2px,
+    transparent 12px
+  );
+  background-size: 150px 150px;
+  animation: circuit-slide 40s linear infinite;
+}
+
+/* CRT Screen Effect - Scanlines */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%, 
+    rgba(0, 0, 0, 0.28) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+
+/* Scanning bar */
+.scanline-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 15px;
+  z-index: 1000;
+  opacity: 0.15;
+  background: linear-gradient(to bottom, transparent, #00f2ff, transparent);
+  pointer-events: none;
+  animation: scanline-move 8s linear infinite;
+}
+
+/* Additional Immersive UI styling templates */
+.scanline {
+  background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.3) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.pixel-grid {
+  background-image: linear-gradient(to right, rgba(0, 242, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.neon-border-blue {
+  border: 3px solid #00f2ff;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.6), inset 0 0 10px rgba(0, 242, 255, 0.4);
+}
+
+.neon-border-red {
+  border: 3px solid #ff0055;
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.6), inset 0 0 10px rgba(255, 0, 85, 0.4);
+}
+
+.angled-box {
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+}
+
+.angled-tab {
+  clip-path: polygon(0 0, 90% 0, 100% 100%, 0 100%);
+}
+
+.glow-text-blue {
+  text-shadow: 0 0 10px #00f2ff, 0 0 20px #00f2ff;
+}
+
+.glow-text-red {
+  text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055;
+}
+
+/* Animations definition */
+@keyframes bg-scroll {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 400px 400px;
+  }
+}
+
+@keyframes circuit-slide {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -150px 150px;
+  }
+}
+
+@keyframes scanline-move {
+  0% {
+    top: -15px;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+@keyframes neon-blink {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 10px #00f2ff, 0 0 20px #00f2ff;
+  }
+  50% {
+    opacity: 0.8;
+    text-shadow: 0 0 4px #005a70, 0 0 8px #005a70;
+  }
+}
+
+@keyframes neon-blink-red {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 10px #ff0055, 0 0 15px #ff0055;
+  }
+  50% {
+    opacity: 0.8;
+    text-shadow: 0 0 4px #700000, 0 0 8px #700000;
+  }
+}
+
+@keyframes green-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px #00ff66, inset 0 0 8px #00ff66;
+  }
+  50% {
+    box-shadow: 0 0 18px #00ff66, inset 0 0 12px #00ff66;
+  }
+}
+
+/* Glow Classes matching theme values */
+.text-neon-cyan {
+  color: #00f2ff;
+  text-shadow: 0 0 8px #00f2ff;
+}
+
+.text-neon-cyan-blink {
+  animation: neon-blink 2s infinite;
+}
+
+.text-neon-red-blink {
+  animation: neon-blink-red 1.5s infinite;
+}
+
+.border-neon-cyan {
+  border-color: #00f2ff;
+  box-shadow: 0 0 8px rgba(0, 242, 255, 0.4), inset 0 0 4px rgba(0, 242, 255, 0.4);
+}
+
+.border-neon-green {
+  border-color: #00ff66;
+  animation: green-pulse 3s infinite;
+}
+
+.border-neon-red {
+  border-color: #ff0055;
+  box-shadow: 0 0 8px rgba(255, 0, 85, 0.4), inset 0 0 4px rgba(255, 0, 85, 0.4);
+}
+
+.border-neon-purple {
+  border-color: #d63bff;
+  box-shadow: 0 0 8px rgba(214, 59, 255, 0.4), inset 0 0 4px rgba(214, 59, 255, 0.4);
+}
+
+/* X4 styled dual selection elements with Immersive UI details */
+.x4-hero-panel {
+  position: relative;
+  background: rgba(4, 8, 16, 0.85);
+  border: 4px solid;
+  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.x4-hero-panel:hover {
+  transform: scale(1.03);
+}
+
+/* WIN/LOSS specialized active designs from theme */
+#btn-outcome-win.active {
+  background: #0a2a44;
+  border-color: #00f2ff;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.6), inset 0 0 10px rgba(0, 242, 255, 0.4);
+  transform: scale(1.05);
+}
+
+#btn-outcome-loss.active {
+  background: #330a1a;
+  border-color: #ff0055;
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.6), inset 0 0 10px rgba(255, 0, 85, 0.4);
+  transform: scale(1.05);
+}
+
+.x4-corner-bracket::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 15px;
+  height: 15px;
+  border-top: 3px solid;
+  border-left: 3px solid;
+}
+
+.x4-corner-bracket::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 15px;
+  height: 15px;
+  border-bottom: 3px solid;
+  border-right: 3px solid;
+}
+
+/* Classic retro input with Immersive design guidelines */
+.pixel-input {
+  background: #020408;
+  border: 2px solid #00f2ff;
+  color: #fff;
+  padding: 8px 12px;
+  font-family: var(--font-pixel);
+  outline: none;
+  box-shadow: inset 0 0 4px #00f2ff;
+  image-rendering: pixelated;
+}
+
+.pixel-input:focus {
+  border-color: #00ff66;
+  box-shadow: inset 0 0 6px #00ff66, 0 0 4px #00ff66;
+}
+
+/* Pixel Button styled in retro style */
+.pixel-btn {
+  position: relative;
+  border: 2px solid #00f2ff;
+  background-color: #0c1a33;
+  color: #00f2ff;
+  display: inline-block;
+  padding: 8px 16px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-pixel);
+  box-shadow: 0 4px 0 #005a70;
+  transition: all 0.1s ease;
+}
+
+.pixel-btn:active {
+  top: 4px;
+  box-shadow: none;
+}
+
+.pixel-btn-red {
+  border-color: #ff0055;
+  color: #ff0055;
+  background-color: #240c14;
+  box-shadow: 0 4px 0 #70001a;
+}
+
+.pixel-btn-red:active {
+  top: 4px;
+  box-shadow: none;
+}
+
+.pixel-btn-green {
+  border-color: #00ff66;
+  color: #00ff66;
+  background-color: #0c1a11;
+  box-shadow: 0 4px 0 #00702c;
+}
+
+.pixel-btn-green:active {
+  top: 4px;
+  box-shadow: none;
+}
+
+/* Scrollbars customized to look like retro sliders */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #040810;
+  border: 1px solid #162a45;
+}
+::-webkit-scrollbar-thumb {
+  background: #00f2ff;
+  border: 2px solid #040810;
+}
+
+/* Bottom Nav bar rules */
+footer nav button {
+  transition: background-color 0.15s, color 0.15s, transform 0.1s;
+}
+
+footer nav button.active {
+  background-color: rgba(0, 242, 255, 0.15);
+  color: #fff !important;
+  text-shadow: 0 0 6px #00f2ff;
+  transform: translateY(-2px);
+}
