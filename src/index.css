@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:ital,wght@1,500;1,700;1,900&family=Chakra+Petch:ital,wght@1,500;1,600;1,700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-pixel: "Press Start 2P", "Silkscreen", monospace;
+  --font-pixel: "Orbitron", "Chakra Petch", "Press Start 2P", sans-serif;
   --font-vt: "VT323", monospace;
 }
 
@@ -10,8 +10,10 @@
 
 body {
   font-family: var(--font-pixel);
-  background-color: #050b18;
-  color: #e0faff;
+  font-style: italic;
+  font-weight: 700;
+  background-color: #08090d;
+  color: #e5e7eb;
   overflow-x: hidden;
   image-rendering: pixelated;
 }
@@ -24,13 +26,21 @@ body {
   width: 100%;
   height: 100%;
   z-index: -2;
-  background-color: #050b18;
+  background: radial-gradient(circle at 15% 90%, rgba(255, 255, 255, 0.12) 0%, rgba(156, 163, 175, 0.04) 35%, #08090d 100%);
+  background-color: #08090d;
+}
+
+.retro-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background-image: 
-    linear-gradient(to right, rgba(0, 242, 254, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: center;
   animation: bg-scroll 25s linear infinite;
+  pointer-events: none;
 }
 
 /* Slanted circuitry lines in the background */
@@ -41,11 +51,11 @@ body {
   width: 100%;
   height: 100%;
   z-index: -1;
-  opacity: 0.15;
+  opacity: 0.1;
   background-image: repeating-linear-gradient(
     45deg,
-    #00f2ff,
-    #00f2ff 2px,
+    #9ca3af,
+    #9ca3af 2px,
     transparent 2px,
     transparent 12px
   );
@@ -79,7 +89,7 @@ body {
   height: 15px;
   z-index: 1000;
   opacity: 0.15;
-  background: linear-gradient(to bottom, transparent, #00f2ff, transparent);
+  background: linear-gradient(to bottom, transparent, #ffffff, transparent);
   pointer-events: none;
   animation: scanline-move 8s linear infinite;
 }
@@ -93,13 +103,18 @@ body {
 }
 
 .pixel-grid {
-  background-image: linear-gradient(to right, rgba(0, 242, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 .neon-border-blue {
   border: 3px solid #00f2ff;
   box-shadow: 0 0 15px rgba(0, 242, 255, 0.6), inset 0 0 10px rgba(0, 242, 255, 0.4);
+}
+
+.neon-border-green {
+  border: 3px solid #e2e8f0;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .neon-border-red {
@@ -117,6 +132,10 @@ body {
 
 .glow-text-blue {
   text-shadow: 0 0 10px #00f2ff, 0 0 20px #00f2ff;
+}
+
+.glow-text-green {
+  text-shadow: 0 0 10px #ffffff, 0 0 20px #9ca3af;
 }
 
 .glow-text-red {
@@ -154,11 +173,11 @@ body {
 @keyframes neon-blink {
   0%, 100% {
     opacity: 1;
-    text-shadow: 0 0 10px #00f2ff, 0 0 20px #00f2ff;
+    text-shadow: 0 0 10px #ffffff, 0 0 20px #ffffff;
   }
   50% {
     opacity: 0.8;
-    text-shadow: 0 0 4px #005a70, 0 0 8px #005a70;
+    text-shadow: 0 0 4px #4b5563, 0 0 8px #4b5563;
   }
 }
 
@@ -175,17 +194,26 @@ body {
 
 @keyframes green-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px #00ff66, inset 0 0 8px #00ff66;
+    box-shadow: 0 0 8px #ffffff, inset 0 0 8px #ffffff;
   }
   50% {
-    box-shadow: 0 0 18px #00ff66, inset 0 0 12px #00ff66;
+    box-shadow: 0 0 18px #ffffff, inset 0 0 12px #ffffff;
+  }
+}
+
+@keyframes purple-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4), inset 0 0 8px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.8), inset 0 0 12px rgba(255, 255, 255, 0.6);
   }
 }
 
 /* Glow Classes matching theme values */
 .text-neon-cyan {
-  color: #00f2ff;
-  text-shadow: 0 0 8px #00f2ff;
+  color: #ffffff;
+  text-shadow: 0 0 8px #ffffff, 0 0 15px #9ca3af;
 }
 
 .text-neon-cyan-blink {
@@ -196,14 +224,57 @@ body {
   animation: neon-blink-red 1.5s infinite;
 }
 
+/* Highly polished 90s Capcom style yellow-gold-white chrome text gradient matching PLAYER text */
+.text-retro-arcade-chrome {
+  font-family: var(--font-pixel);
+  font-weight: 900;
+  font-style: italic;
+  
+  /* Gradation matching PLAYER image precisely */
+  background: linear-gradient(
+    to bottom,
+    #fff200 0%,      /* Bright yellow-gold top */
+    #ffbe00 40%,     /* Deep gold top-mid transition */
+    #ffffff 45%,     /* Sharp horizontal chrome/silver reflection strip */
+    #ffffff 55%,     /* Sharp white/silver reflection strip center */
+    #ffd000 60%,     /* Bottom metallic yellow transition */
+    #ff9000 100%     /* Warm arcade orange-gold base */
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  text-fill-color: transparent !important;
+  color: transparent !important;
+  
+  /* Thick black stylized outline and high-contrast double shadow for high retro legibility */
+  filter: drop-shadow(1.5px 1.5px 0px #000000) 
+          drop-shadow(-1.5px -1.5px 0px #000000) 
+          drop-shadow(1.5px -1.5px 0px #000000) 
+          drop-shadow(-1.5px 1.5px 0px #000000) 
+          drop-shadow(2px 3px 0px rgba(0,0,0,0.85));
+  
+  letter-spacing: 0.12em;
+  display: inline-block;
+  animation: arcade-pop-pulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes arcade-pop-pulse {
+  0% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1.03);
+  }
+}
+
 .border-neon-cyan {
-  border-color: #00f2ff;
-  box-shadow: 0 0 8px rgba(0, 242, 255, 0.4), inset 0 0 4px rgba(0, 242, 255, 0.4);
+  border-color: #e2e8f0;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4), inset 0 0 4px rgba(255, 255, 255, 0.4);
 }
 
 .border-neon-green {
-  border-color: #00ff66;
-  animation: green-pulse 3s infinite;
+  border-color: #ffffff;
+  animation: purple-pulse 3s infinite;
 }
 
 .border-neon-red {
@@ -212,36 +283,109 @@ body {
 }
 
 .border-neon-purple {
-  border-color: #d63bff;
-  box-shadow: 0 0 8px rgba(214, 59, 255, 0.4), inset 0 0 4px rgba(214, 59, 255, 0.4);
+  border-color: #e2e8f0;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3), inset 0 0 4px rgba(255, 255, 255, 0.3);
 }
 
 /* X4 styled dual selection elements with Immersive UI details */
-.x4-hero-panel {
-  position: relative;
-  background: rgba(4, 8, 16, 0.85);
-  border: 4px solid;
-  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, background 0.2s ease;
+.x4-trapezoid-wrapper-win {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 100%;
+  background: #374151; /* Charcoal border */
+  clip-path: polygon(0% 0%, 96.36% 0%, 85.45% 100%, 0% 100%);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.25s ease, background 0.25s ease;
+  cursor: pointer;
+  z-index: 10;
 }
 
-.x4-hero-panel:hover {
-  transform: scale(1.03);
+.x4-trapezoid-wrapper-win:hover:not(.active) {
+  transform: scale(1.02);
+  background: #4b5563;
 }
 
-/* WIN/LOSS specialized active designs from theme */
+.x4-trapezoid-wrapper-win.active {
+  background: #ffffff; /* Vivid white highlight */
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+  z-index: 20;
+  transform: scale(1.04);
+}
+
+.x4-trapezoid-inner-win {
+  position: absolute;
+  inset: 5px; /* Thicker border */
+  background: rgba(12, 13, 16, 0.95);
+  clip-path: polygon(0% 0%, 96.36% 0%, 85.45% 100%, 0% 100%);
+  transition: background 0.25s ease;
+}
+
+.x4-trapezoid-wrapper-win.active .x4-trapezoid-inner-win {
+  background: #1f2937; /* Active dark gray interior */
+}
+
+.x4-trapezoid-wrapper-loss {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55%;
+  height: 100%;
+  background: #570a1e; /* Dark red default border */
+  clip-path: polygon(14.54% 0%, 100% 0%, 100% 100%, 3.63% 100%);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.25s ease, background 0.25s ease;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.x4-trapezoid-wrapper-loss:hover:not(.active) {
+  transform: scale(1.02);
+  background: #75122b; /* Slightly lighter dark red */
+}
+
+.x4-trapezoid-wrapper-loss.active {
+  background: #ff0055; /* Vivid neon red */
+  filter: drop-shadow(0 0 15px rgba(255, 0, 85, 0.8));
+  z-index: 20;
+  transform: scale(1.04);
+}
+
+.x4-trapezoid-inner-loss {
+  position: absolute;
+  inset: 5px; /* Thicker border */
+  background: rgba(12, 13, 16, 0.95);
+  clip-path: polygon(14.54% 0%, 100% 0%, 100% 100%, 3.63% 100%);
+  transition: background 0.25s ease;
+}
+
+.x4-trapezoid-wrapper-loss.active .x4-trapezoid-inner-loss {
+  background: #2b0612; /* Active red hue interior */
+}
+
+/* Elegant overlay for centers of active selections */
+.x4-overlay-text {
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+}
+
+.x4-trapezoid-wrapper-win.active .x4-overlay-text {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.x4-trapezoid-wrapper-loss.active .x4-overlay-text {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Solid Active highlight filters */
 #btn-outcome-win.active {
-  background: #0a2a44;
-  border-color: #00f2ff;
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.6), inset 0 0 10px rgba(0, 242, 255, 0.4);
-  transform: scale(1.05);
+  z-index: 20;
 }
 
 #btn-outcome-loss.active {
-  background: #330a1a;
-  border-color: #ff0055;
-  box-shadow: 0 0 15px rgba(255, 0, 85, 0.6), inset 0 0 10px rgba(255, 0, 85, 0.4);
-  transform: scale(1.05);
+  z-index: 20;
 }
 
 .x4-corner-bracket::before {
@@ -268,35 +412,42 @@ body {
 
 /* Classic retro input with Immersive design guidelines */
 .pixel-input {
-  background: #020408;
-  border: 2px solid #00f2ff;
+  background: #111317;
+  border: 2px solid #9ca3af;
   color: #fff;
   padding: 8px 12px;
   font-family: var(--font-pixel);
   outline: none;
-  box-shadow: inset 0 0 4px #00f2ff;
+  box-shadow: inset 0 0 4px #4b5563;
   image-rendering: pixelated;
 }
 
 .pixel-input:focus {
-  border-color: #00ff66;
-  box-shadow: inset 0 0 6px #00ff66, 0 0 4px #00ff66;
+  border-color: #ffffff;
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.8), 0 0 4px rgba(255, 255, 255, 0.5);
 }
 
 /* Pixel Button styled in retro style */
 .pixel-btn {
   position: relative;
-  border: 2px solid #00f2ff;
-  background-color: #0c1a33;
-  color: #00f2ff;
+  border: 2px solid #9ca3af;
+  background-color: #1a1d24;
+  color: #d1d5db;
   display: inline-block;
   padding: 8px 16px;
   text-align: center;
   cursor: pointer;
   user-select: none;
   font-family: var(--font-pixel);
-  box-shadow: 0 4px 0 #005a70;
+  box-shadow: 0 4px 0 #4b5563;
   transition: all 0.1s ease;
+}
+
+.pixel-btn:hover {
+  background-color: #282c35;
+  color: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 4px 0 #6b7280, 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 .pixel-btn:active {
@@ -317,10 +468,17 @@ body {
 }
 
 .pixel-btn-green {
-  border-color: #00ff66;
-  color: #00ff66;
-  background-color: #0c1a11;
-  box-shadow: 0 4px 0 #00702c;
+  border-color: #e2e8f0;
+  color: #ffffff;
+  background-color: #1a1d24;
+  box-shadow: 0 4px 0 #4b5563;
+}
+
+.pixel-btn-green:hover {
+  background-color: #282c35;
+  color: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 4px 0 #6b7280, 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 .pixel-btn-green:active {
@@ -334,12 +492,12 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #040810;
-  border: 1px solid #162a45;
+  background: #08090d;
+  border: 1px solid #2d3139;
 }
 ::-webkit-scrollbar-thumb {
-  background: #00f2ff;
-  border: 2px solid #040810;
+  background: #9ca3af;
+  border: 2px solid #08090d;
 }
 
 /* Bottom Nav bar rules */
@@ -348,8 +506,111 @@ footer nav button {
 }
 
 footer nav button.active {
-  background-color: rgba(0, 242, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.12);
   color: #fff !important;
-  text-shadow: 0 0 6px #00f2ff;
+  text-shadow: 0 0 6px #ffffff, 0 0 10px #ffffff;
   transform: translateY(-2px);
 }
+
+/* Authentic Capcom Retro Game Dialogue Box Frame and matching Inputs */
+.capcom-dialog-frame-win {
+  background: linear-gradient(to bottom, #003a6d 0%, #000c1d 100%);
+  border: 1.5px solid #a3e8ff;
+  box-shadow: 
+    inset 0 0 0 2px #000a16,         /* Inner dark channel */
+    inset 0 0 0 3.5px #a3e8ff,       /* Inner bright line */
+    0 0 0 1px #000a16,               /* Outer dark shadow line */
+    0 0 0 2.5px #a3e8ff,             /* Outer high-contrast frame border */
+    0 4px 12px rgba(0, 0, 0, 0.7);   /* Dark ambient drop shadow */
+  border-radius: 4px;
+  position: relative;
+}
+
+.capcom-dialog-frame-loss {
+  background: linear-gradient(to bottom, #4c0717 0%, #0c0003 100%);
+  border: 1.5px solid #ff80a3;
+  box-shadow: 
+    inset 0 0 0 2px #090002,         /* Inner dark channel */
+    inset 0 0 0 3.5px #ff80a3,       /* Inner bright line */
+    0 0 0 1px #090002,               /* Outer dark shadow line */
+    0 0 0 2.5px #ff80a3,             /* Outer high-contrast frame border */
+    0 4px 12px rgba(0, 0, 0, 0.7);   /* Dark ambient drop shadow */
+  border-radius: 4px;
+  position: relative;
+}
+
+.capcom-dialog-frame-neutral {
+  background: linear-gradient(to bottom, #1d212a 0%, #0a0c0e 100%);
+  border: 1.5px solid #a1acba;
+  box-shadow: 
+    inset 0 0 0 2px #040506,         /* Inner dark channel */
+    inset 0 0 0 3.5px #a1acba,       /* Inner bright line */
+    0 0 0 1px #040506,               /* Outer dark shadow line */
+    0 0 0 2.5px #a1acba,             /* Outer high-contrast frame border */
+    0 4px 12px rgba(0, 0, 0, 0.7);   /* Dark ambient drop shadow */
+  border-radius: 4px;
+  position: relative;
+}
+
+/* Custom Labels under Capcom styled grids */
+.capcom-label-win {
+  color: #a3e8ff;
+  font-family: var(--font-pixel);
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 3px rgba(0, 75, 144, 0.8);
+}
+.capcom-label-loss {
+  color: #ff80a3;
+  font-family: var(--font-pixel);
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 3px rgba(76, 7, 23, 0.8);
+}
+.capcom-label-neutral {
+  color: #a1acba;
+  font-family: var(--font-pixel);
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 3px rgba(40, 45, 50, 0.8);
+}
+
+/* Custom Capcom inner inputs */
+.capcom-inner-input {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1.5px solid #00569c;
+  color: #ffffff;
+  padding: 10px 14px;
+  font-family: var(--font-pixel);
+  outline: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+.capcom-inner-input:focus {
+  border-color: #00f2ff;
+  background: rgba(0, 16, 38, 0.85);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 0 8px rgba(0, 242, 255, 0.4);
+}
+
+/* Loss focused inputs inside the frame */
+.capcom-dialog-frame-loss .capcom-inner-input {
+  border-color: #7a122c;
+}
+.capcom-dialog-frame-loss .capcom-inner-input:focus {
+  border-color: #ff0055;
+  background: rgba(27, 3, 9, 0.85);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 0 8px rgba(255, 0, 85, 0.4);
+}
+
+/* Neutral/draw state focused inputs inside the frame */
+.capcom-dialog-frame-neutral .capcom-inner-input {
+  border-color: #4a515c;
+}
+.capcom-dialog-frame-neutral .capcom-inner-input:focus {
+  border-color: #a1acba;
+  background: rgba(20, 22, 26, 0.85);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 0 8px rgba(161, 172, 186, 0.4);
+}
+
