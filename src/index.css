@@ -307,8 +307,8 @@ body {
 }
 
 .x4-trapezoid-wrapper-win.active {
-  background: #ffffff; /* Vivid white highlight */
-  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+  background: #00f2ff; /* Vivid neon cyan */
+  filter: drop-shadow(0 0 15px rgba(0, 242, 255, 0.8));
   z-index: 20;
   transform: scale(1.04);
 }
