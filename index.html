@@ -27,17 +27,26 @@
       
       <!-- Top Header / X4 Styled Banner -->
       <header class="mb-4">
-        <div class="flex justify-between items-center border-b-4 border-double border-[#00f2ff] pb-2">
+        <div class="flex justify-between items-center border-b-4 border-double border-[#9ca3af] pb-2">
           <div>
-            <h1 class="text-xs uppercase tracking-widest text-[#00f2ff] glow-text-blue font-bold" id="header-stage-info">ST-04: MEMES FIELD</h1>
+            <h1 class="text-xs uppercase tracking-widest text-[#ffffff] glow-text-green font-bold" id="header-stage-info">ST-04: MEMES FIELD</h1>
             <h2 class="text-sm md:text-base font-bold text-white text-neon-cyan-blink" id="header-title">DUEL RECORD SYSTEM</h2>
           </div>
-          <!-- BGM toggle button -->
-          <button id="bgm-ctrl-btn" class="pixel-btn text-[10px] px-2 py-1 flex items-center gap-1">
-            <span>🎵</span> <span id="bgm-status-text">OFF</span>
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- Language Toggle Dropdown moved to Header -->
+            <select id="select-lang" class="bg-[#111317] text-white border border-[#9ca3af] font-pixel text-[10px] p-1 px-1.5 focus:outline-none focus:border-[#ffffff] max-w-[85px] h-6 cursor-pointer">
+              <option value="ja">日本語</option>
+              <option value="zh-TW">繁體中文</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="en">English</option>
+            </select>
+            <!-- BGM toggle button -->
+            <button id="bgm-ctrl-btn" class="pixel-btn text-[10px] px-2 py-1 flex items-center gap-1 h-6">
+              <span>🎵</span> <span id="bgm-status-text">OFF</span>
+            </button>
+          </div>
         </div>
-        <div class="flex justify-between text-[10px] font-mono text-[#005a70] mt-1 uppercase">
+        <div class="flex justify-between text-[10px] font-mono text-[#9ca3af] mt-1 uppercase">
           <span id="header-sub-l">PL: WIN_OR_LOSS</span>
           <span id="header-sub-r">DATABASE: SQLITE3</span>
         </div>
@@ -49,74 +58,72 @@
         <!-- ==================== TAB 1: RECORD ==================== -->
         <section id="tab-record" class="tab-content block">
           
-          <div class="text-center text-[#ff0055] font-bold mb-3 tracking-widest text-[10px] text-neon-red-blink" id="rec-prompt">
-            &gt;&gt; SELECT YOUR OUTCOME &lt;&lt;
+          <div class="text-center mb-3">
+            <span id="rec-prompt" class="text-retro-arcade-chrome uppercase tracking-widest text-[9px] md:text-[10px]">
+              &gt;&gt; SELECT YOUR OUTCOME &lt;&lt;
+            </span>
           </div>
 
-          <!-- Hero Selection Layout (X vs Zero) -->
-          <div class="grid grid-cols-2 gap-4 mb-4 relative">
+          <!-- Hero Selection Layout (X vs Zero slanted complementary trapezoids) -->
+          <div class="relative w-full h-[190px] md:h-[240px] mb-6 select-none">
             
-            <!-- Left Hero Box: X (WIN) -->
-            <div id="btn-outcome-win" class="x4-hero-panel active border-[#00f2ff] cursor-pointer" data-outcome="win">
-              <div class="x4-corner-bracket text-[#00f2ff]"></div>
-              <div class="p-2 flex flex-col h-full">
-                <!-- Visual Box -->
-                <div class="w-full aspect-[4/3] bg-[#0a2a44] overflow-hidden border-2 border-dotted border-[#00f2ff] relative flex items-center justify-center">
-                  <img id="display-win-image" src="/uploads/rockman_win.png" class="w-full h-full object-cover" alt="WIN Meme" referrerPolicy="no-referrer">
-                  <div class="absolute bottom-1 left-1 bg-[#050b18] bg-opacity-80 px-1 py-0.5 border border-[#00f2ff] scale-90 origin-bottom-left text-[9px] font-bold text-white">CH_WIN</div>
-                </div>
-                <div class="text-center font-bold text-[#00f2ff] glow-text-blue mt-2 tracking-widest text-sm uppercase">
-                  WIN
+            <!-- Left Hero Box: X (WIN) - Top wide, bottom narrow -->
+            <div id="btn-outcome-win" class="x4-trapezoid-wrapper-win active cursor-pointer" data-outcome="win">
+              <div class="x4-trapezoid-inner-win overflow-hidden">
+                <!-- Img occupying full area of the trapezoid shape -->
+                <img id="display-win-image" src="/uploads/rockman_win.png" class="w-full h-full object-fill absolute inset-0 block select-none pointer-events-none" alt="WIN Meme" referrerPolicy="no-referrer">
+                
+                <!-- Tiny corner metadata indicator -->
+                <div class="absolute bottom-1.5 left-1.5 bg-[#030d04] bg-opacity-80 px-1 py-0.5 border border-[#00f2ff] scale-90 origin-bottom-left text-[9px] font-bold text-white z-10 font-mono">CH_WIN</div>
+                
+                <!-- Overlay text that floats up and reveals ONLY upon selection -->
+                <div class="x4-overlay-text absolute inset-0 bg-[#00f2ff]/15 flex items-center justify-center pointer-events-none z-20">
+                  <span class="bg-[#030d04]/90 text-[#00f2ff] px-3.5 py-1.5 border-2 border-double border-[#00f2ff] font-pixel text-xs md:text-sm uppercase tracking-widest font-bold glow-text-blue shadow-lg">
+                    WIN
+                  </span>
                 </div>
               </div>
             </div>
-
-            <!-- Absolute VS Divider in center overlap -->
-            <div class="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
-              <div class="w-10 h-10 rounded-full bg-[#050b18] border-4 border-double border-[#ff0055] text-[#ff0055] flex items-center justify-center font-bold text-sm tracking-tighter shadow-md select-none font-pixel italic">
-                VS
-              </div>
-            </div>
-
-            <!-- Right Hero Box: Zero (LOSS) -->
-            <div id="btn-outcome-loss" class="x4-hero-panel border-[#ff0055] cursor-pointer" data-outcome="loss">
-              <div class="x4-corner-bracket text-[#ff0055]"></div>
-              <div class="p-2 flex flex-col h-full">
-                <!-- Visual Box -->
-                <div class="w-full aspect-[4/3] bg-[#330a1a] overflow-hidden border-2 border-dotted border-[#ff0055] relative flex items-center justify-center">
-                  <img id="display-loss-image" src="/uploads/zero_lose.png" class="w-full h-full object-cover" alt="LOSS Meme" referrerPolicy="no-referrer">
-                  <div class="absolute bottom-1 right-1 bg-[#050b18] bg-opacity-80 px-1 py-0.5 border border-[#00f2ff] scale-90 origin-bottom-right text-[9px] font-bold text-white">CH_LOSS</div>
-                </div>
-                <div class="text-center font-bold text-[#ff0055] glow-text-red mt-2 tracking-widest text-sm uppercase">
-                  LOSS
+ 
+            <!-- Right Hero Box: Zero (LOSS) - Top narrow, bottom wide -->
+            <div id="btn-outcome-loss" class="x4-trapezoid-wrapper-loss cursor-pointer" data-outcome="loss">
+              <div class="x4-trapezoid-inner-loss overflow-hidden">
+                <!-- Img occupying full area of the trapezoid shape -->
+                <img id="display-loss-image" src="/uploads/zero_lose.png" class="w-full h-full object-fill absolute inset-0 block select-none pointer-events-none" alt="LOSS Meme" referrerPolicy="no-referrer">
+                
+                <!-- Tiny corner metadata indicator -->
+                <div class="absolute bottom-1.5 right-1.5 bg-[#111317] bg-opacity-80 px-1 py-0.5 border border-[#9ca3af] scale-90 origin-bottom-right text-[9px] font-bold text-white z-10 font-mono">CH_LOSS</div>
+                
+                <!-- Overlay text that floats up and reveals ONLY upon selection -->
+                <div class="x4-overlay-text absolute inset-0 bg-[#ff0055]/15 flex items-center justify-center pointer-events-none z-20">
+                  <span class="bg-[#030d04]/90 text-[#ff0055] px-3.5 py-1.5 border-2 border-double border-[#ff0055] font-pixel text-xs md:text-sm uppercase tracking-widest font-bold glow-text-red shadow-lg">
+                    LOSS
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Input Fields Frame -->
-          <div class="bg-[#050b18] border-2 border-[#00f2ff] p-3 rounded relative mb-4">
-            <!-- Neon structural decorations -->
-            <div class="absolute top-0 right-4 w-12 h-1 bg-[#00f2ff]"></div>
-            <div class="absolute bottom-0 left-4 w-12 h-1 bg-[#00f2ff]"></div>
-
+          <div id="input-fields-frame" class="capcom-dialog-frame-win p-4 relative mb-4 transition-all duration-300">
+ 
             <div class="flex flex-col gap-3">
               <!-- Reason textarea -->
               <div>
-                <label class="block text-[#00f2ff] font-bold mb-1 uppercase text-[9px]" id="lbl-reason">Reason / Logs (原因/備註):</label>
-                <input type="text" id="input-reason" class="w-full pixel-input text-xs" placeholder="e.g. 程式碼一發就過 / 打小鋼珠胡了" maxlength="200" autocomplete="off" />
+                <label class="block text-[#a3e8ff] font-bold mb-1.5 uppercase text-[9px] font-pixel transition-colors duration-300" id="lbl-reason">Reason / Logs (原因/備註):</label>
+                <input type="text" id="input-reason" class="w-full capcom-inner-input text-xs" placeholder="e.g. 程式碼一發就過 / 打小鋼珠胡了" maxlength="200" autocomplete="off" />
               </div>
-
+ 
               <!-- Upload Voucher Image -->
               <div>
-                <label class="block text-[#00f2ff] font-bold mb-1 uppercase text-[9px]" id="lbl-proof">Proof Voucher Screenshot (憑證/截圖 - 選填):</label>
+                <label class="block text-[#a3e8ff] font-bold mb-1.5 uppercase text-[9px] font-pixel transition-colors duration-300" id="lbl-proof">Proof Voucher Screenshot (憑證/截圖 - 選填):</label>
                 <div class="flex items-center gap-3">
                   <!-- Hidden File Input -->
                   <input type="file" id="input-file" class="hidden" accept="image/*" />
-                  <button id="btn-trigger-upload" class="pixel-btn text-[10px] py-1 border-neon-cyan flex items-center gap-1">
+                  <button id="btn-trigger-upload" class="pixel-btn text-[10px] py-1 border-none bg-[#093c5c] text-[#00f2ff] flex items-center gap-1 rounded shadow-sm hover:bg-[#11537e] transition-colors">
                     📁 <span id="btn-upload-lbl">CHOOSE FILE</span>
                   </button>
-                  <span id="file-name-indicator" class="text-[10px] font-mono text-[#00f2ff] truncate flex-grow">NO FILE CHOSEN</span>
+                  <span id="file-name-indicator" class="text-[10px] font-mono text-[#a4bdcf] truncate flex-grow">NO FILE CHOSEN</span>
                 </div>
               </div>
             </div>
@@ -133,7 +140,7 @@
         <section id="tab-timeline" class="tab-content hidden">
           <div class="flex justify-between items-center mb-3">
             <h3 class="text-neon-cyan uppercase font-bold" id="tab2-title">TIMELINE HISTORIES</h3>
-            <span id="timeline-count" class="font-mono text-[#005a70]">0 RECS</span>
+            <span id="timeline-count" class="font-mono text-[#9ca3af]">0 RECS</span>
           </div>
           
           <!-- Timeline scrolling area -->
@@ -142,60 +149,60 @@
             <div class="text-center text-[#ff3b3b] py-8">LOADING RECS CLIENT...</div>
           </div>
         </section>
-
+ 
         <!-- ==================== TAB 3: STATS ==================== -->
         <section id="tab-stats" class="tab-content hidden">
           
           <!-- Period Selector tab brackets -->
-          <div class="grid grid-cols-3 gap-1 mb-4 text-center border-b border-[#00f2ff] pb-2">
-            <button class="stats-period-btn active text-[#00f2ff] font-bold uppercase text-[9px] py-1" data-period="day" id="span-day">[ DAILY ]</button>
-            <button class="stats-period-btn text-[#005a70] font-bold uppercase text-[9px] py-1" data-period="week" id="span-week">WEEKLY</button>
-            <button class="stats-period-btn text-[#005a70] font-bold uppercase text-[9px] py-1" data-period="month" id="span-month">MONTHLY</button>
+          <div class="grid grid-cols-3 gap-1 mb-4 text-center border-b border-[#9ca3af] pb-2">
+            <button class="stats-period-btn active text-[#ffffff] glow-text-green font-bold uppercase text-[9px] py-1" data-period="day" id="span-day">[ DAILY ]</button>
+            <button class="stats-period-btn text-[#9ca3af] font-bold uppercase text-[9px] py-1" data-period="week" id="span-week">WEEKLY</button>
+            <button class="stats-period-btn text-[#9ca3af] font-bold uppercase text-[9px] py-1" data-period="month" id="span-month">MONTHLY</button>
           </div>
-
+ 
           <!-- Numeric indicators dashboard -->
           <div class="grid grid-cols-3 gap-2 mb-4">
             
-            <div class="bg-[#0a2a44]/50 border border-[#00f2ff] p-2 rounded text-center relative">
+            <div class="bg-[#1a1d24]/80 border border-[#9ca3af] p-2 rounded text-center relative">
               <div class="text-[9px] text-[#00f2ff] glow-text-blue uppercase font-bold" id="stat-win-lbl">WIN</div>
               <div id="stat-val-win" class="text-lg md:text-xl font-bold text-white tracking-widest my-1">0</div>
-              <div class="text-[8px] text-[#005a70] font-mono" id="stat-win-desc">VICTORIES</div>
+              <div class="text-[8px] text-[#9ca3af] font-mono" id="stat-win-desc">VICTORIES</div>
             </div>
-
+ 
             <div class="bg-[#330a1a]/50 border border-[#ff0055] p-2 rounded text-center relative">
               <div class="text-[9px] text-[#ff0055] glow-text-red uppercase font-bold" id="stat-loss-lbl">LOSS</div>
               <div id="stat-val-loss" class="text-lg md:text-xl font-bold text-white tracking-widest my-1">0</div>
-              <div class="text-[8px] text-[#005a70] font-mono" id="stat-loss-desc">DEFEATS</div>
+              <div class="text-[8px] text-[#9ca3af] font-mono" id="stat-loss-desc">DEFEATS</div>
             </div>
-
-            <div class="bg-[#050b18] border border-[#00f2ff] p-2 rounded text-center relative">
-              <div class="text-[9px] text-neon-cyan uppercase font-bold" id="stat-rate-lbl">RATE</div>
+ 
+            <div class="bg-[#111317] border border-[#9ca3af] p-2 rounded text-center relative">
+              <div class="text-[9px] text-[#ffffff] uppercase font-bold font-pixel" id="stat-rate-lbl">RATE</div>
               <div id="stat-val-rate" class="text-lg md:text-xl font-bold text-white tracking-widest my-1">0%</div>
-              <div class="text-[8px] text-[#005a70] font-mono" id="stat-rate-desc">WIN RATIO</div>
+              <div class="text-[8px] text-[#9ca3af] font-mono" id="stat-rate-desc">WIN RATIO</div>
             </div>
-
+ 
           </div>
-
+ 
           <!-- Dynamic Meme block styled dramatically -->
-          <div class="bg-[#050b18] border-4 border-double border-[#00f2ff] p-3 rounded relative">
-            <div class="text-[9px] text-[#00f2ff] glow-text-blue font-bold uppercase mb-2 tracking-widest" id="stat-meme-banner">&gt;&gt; DUEL ASSESSMENT STATUS</div>
-
+          <div class="bg-[#111317] border-4 border-double border-[#9ca3af] p-3 rounded relative">
+            <div class="text-[9px] text-[#ffffff] glow-text-blue font-bold uppercase mb-2 tracking-widest" id="stat-meme-banner">&gt;&gt; DUEL ASSESSMENT STATUS</div>
+ 
             <!-- Dynamic portrait container -->
             <div class="w-full flex flex-col items-center">
-              <div class="w-2/3 md:w-1/2 aspect-square border-2 border-[#00f2ff] bg-[#050b18] overflow-hidden relative p-1 mb-2">
+              <div class="w-2/3 md:w-1/2 aspect-square border-2 border-[#9ca3af] bg-[#111317] overflow-hidden relative p-1 mb-2">
                 <img id="stats-meme-display" src="/uploads/tie_meme.png" class="w-full h-full object-cover" alt="Dynamic Meme" referrerPolicy="no-referrer">
                 <!-- Glowing futuristic neon visual brackets -->
-                <div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#00f2ff]"></div>
-                <div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#00f2ff]"></div>
+                <div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#ffffff]"></div>
+                <div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#ffffff]"></div>
               </div>
-
+ 
               <!-- Label status -->
               <div class="text-center mb-1 text-[#ff0055] font-bold font-pixel tracking-wider text-xs uppercase" id="stats-status-badge">
                 EQUAL DUEL (平手狀態)
               </div>
-
+ 
               <!-- Quote message bubbles -->
-              <div class="w-full bg-[#0c1a33] border border-dotted border-[#00f2ff] p-2.5 text-center text-[10px] text-white leading-relaxed font-mono rounded" id="stats-meme-quote">
+              <div class="w-full bg-[#1a1d24] border border-dotted border-[#9ca3af] p-2.5 text-center text-[10px] text-white leading-relaxed font-mono rounded" id="stats-meme-quote">
                 "勝負未揭曉，下一次出擊將分出高下！"
               </div>
             </div>
@@ -210,27 +217,16 @@
 
           <div class="flex flex-col gap-4">
 
-            <!-- 1. Language Toggle -->
-            <div class="border border-[#3bf7ff] p-3 bg-[#050912]">
-              <label class="block text-[#00ff66] font-bold mb-1.5 uppercase text-[9px]" id="set-lbl-lang">Language Select (語系設定):</label>
-              <select id="select-lang" class="w-full bg-[#03060c] text-white border border-[#3bf7ff] font-pixel text-[10px] p-2 focus:outline-none focus:border-[#00ff66]">
-                <option value="ja">日本語 (Default)</option>
-                <option value="zh-TW">繁體中文</option>
-                <option value="zh-CN">简体中文</option>
-                <option value="en">English (US)</option>
-              </select>
-            </div>
-
             <!-- 2. Text Content Config quotes -->
-            <div class="border border-[#3bf7ff] p-3 bg-[#050912]">
+            <div class="border border-[#9ca3af] p-3 bg-[#1a1d24]">
               <label class="block text-neon-cyan font-bold mb-2 uppercase text-[9px]" id="set-lbl-quotes">Custom Quotes (語錄設定 - 直線 | 隔開):</label>
               <div class="flex flex-col gap-3">
                 <div>
-                  <span id="set-sub-win" class="text-[9px] text-[#00ff66] font-mono uppercase block mb-1">Win State Quotes (贏):</span>
+                  <span id="set-sub-win" class="text-[9px] text-[#00f2ff] font-mono uppercase block mb-1">Win State Quotes (贏):</span>
                   <input type="text" id="set-quote-win" class="w-full pixel-input text-xs" />
                 </div>
                 <div>
-                  <span id="set-sub-draw" class="text-[9px] text-[#d63bff] font-mono uppercase block mb-1">Draw State Quotes (和):</span>
+                  <span id="set-sub-draw" class="text-[9px] text-[#d1d5db] font-mono uppercase block mb-1">Draw State Quotes (和):</span>
                   <input type="text" id="set-quote-draw" class="w-full pixel-input text-xs" />
                 </div>
                 <div>
@@ -244,12 +240,12 @@
             </div>
 
             <!-- 3. Asset Replacement Config -->
-            <div class="border border-[#3bf7ff] p-3 bg-[#050912]">
-              <label class="block text-[#00ff66] font-bold mb-2 uppercase text-[9px]" id="set-lbl-assets">Upload / Replace Assets (更換實體資源):</label>
+            <div class="border border-[#9ca3af] p-3 bg-[#1a1d24]">
+              <label class="block text-[#ffffff] font-bold mb-2 uppercase text-[9px]" id="set-lbl-assets">Upload / Replace Assets (更換實體資源):</label>
               
               <form id="settings-assets-form" class="flex flex-col gap-3 text-[10px]">
                 <!-- Replacing Win Meme -->
-                <div class="flex flex-col border-b border-[#005a70] pb-2">
+                <div class="flex flex-col border-b border-[#4a2e80] pb-2">
                   <span class="text-white font-bold mb-1" id="set-lbl-win-img">Win Meme Image (贏):</span>
                   <input type="file" name="win_meme_image" accept="image/*" class="text-[9px]" />
                 </div>
@@ -267,37 +263,37 @@
                 </div>
 
                 <!-- BGM File -->
-                <div class="flex flex-col border-b border-[#005a70] pb-2">
+                <div class="flex flex-col border-b border-[#4a2e80] pb-2">
                   <span class="text-white font-bold mb-1" id="set-lbl-bgm">Custom BGM Audio:</span>
                   <input type="file" name="bgm_file" accept="audio/*" class="text-[9px]" />
                 </div>
 
                 <!-- Win SE Sound File -->
-                <div class="flex flex-col border-b border-[#005a70] pb-2">
+                <div class="flex flex-col border-b border-[#4a2e80] pb-2">
                   <span class="text-white font-bold mb-1" id="set-lbl-win-se">Choose SE (WIN SE Audio):</span>
                   <input type="file" name="win_sound_file" accept="audio/*" class="text-[9px]" />
                 </div>
 
                 <!-- Loss SE Sound File -->
-                <div class="flex flex-col border-b border-[#005a70] pb-2">
+                <div class="flex flex-col border-b border-[#4a2e80] pb-2">
                   <span class="text-white font-bold mb-1" id="set-lbl-loss-se">Choose SE (LOSS SE Audio):</span>
                   <input type="file" name="loss_sound_file" accept="audio/*" class="text-[9px]" />
                 </div>
 
                 <!-- Tab Select SE -->
-                <div class="flex flex-col border-b border-[#005a70] pb-2">
+                <div class="flex flex-col border-b border-[#4a2e80] pb-2">
                   <span class="text-white font-bold mb-1" id="set-lbl-tab-se">Choose SE (Tab Select SE):</span>
                   <input type="file" name="tab_sound_file" accept="audio/*" class="text-[9px]" />
                 </div>
 
                 <!-- Select WIN SE -->
-                <div class="flex flex-col border-b border-[#005a70] pb-2">
+                <div class="flex flex-col border-b border-[#4a2e80] pb-2">
                   <span class="text-white font-bold mb-1" id="set-lbl-select-win-se">Choose SE (Record WIN Select SE):</span>
                   <input type="file" name="select_win_sound_file" accept="audio/*" class="text-[9px]" />
                 </div>
 
                 <!-- Select LOSS SE -->
-                <div class="flex flex-col border-b border-[#005a70] pb-2">
+                <div class="flex flex-col border-b border-[#4a2e80] pb-2">
                   <span class="text-white font-bold mb-1" id="set-lbl-select-loss-se">Choose SE (Record LOSS Select SE):</span>
                   <input type="file" name="select_loss_sound_file" accept="audio/*" class="text-[9px]" />
                 </div>
@@ -320,50 +316,44 @@
       </main>
 
       <!-- ==================== BOTTOM TAB BAR NATIVE ==================== -->
-      <footer class="fixed bottom-0 left-0 w-full bg-[#050b18] border-t-4 border-[#00f2ff] z-50">
-        <nav class="max-w-lg md:max-w-xl mx-auto grid grid-cols-4 select-none pb-safe">
+      <footer class="fixed bottom-0 left-0 w-full bg-[#0a0b0d] border-t-4 border-[#9ca3af] z-50">
+        <nav class="max-w-lg md:max-w-xl mx-auto grid grid-cols-3 select-none pb-safe">
           <!-- RECORD TAB -->
-          <button id="nav-btn-record" class="stats-tab-nav active flex flex-col items-center justify-center py-2 text-[#005a70] cursor-pointer" data-tab="record">
+          <button id="nav-btn-record" class="stats-tab-nav active flex flex-col items-center justify-center py-2 text-[#9ca3af] cursor-pointer" data-tab="record">
             <span class="text-base">🎮</span>
             <span class="text-[8px] mt-1 font-bold font-pixel" id="nav-lbl-record">RECORD</span>
           </button>
-
+ 
           <!-- TIMELINE TAB -->
-          <button id="nav-btn-timeline" class="stats-tab-nav flex flex-col items-center justify-center py-2 text-[#005a70] cursor-pointer" data-tab="timeline">
+          <button id="nav-btn-timeline" class="stats-tab-nav flex flex-col items-center justify-center py-2 text-[#9ca3af] cursor-pointer" data-tab="timeline">
             <span class="text-base">🕒</span>
             <span class="text-[8px] mt-1 font-bold font-pixel" id="nav-lbl-timeline">LOGS</span>
           </button>
-
+ 
           <!-- STATS TAB -->
-          <button id="nav-btn-stats" class="stats-tab-nav flex flex-col items-center justify-center py-2 text-[#005a70] cursor-pointer" data-tab="stats">
+          <button id="nav-btn-stats" class="stats-tab-nav flex flex-col items-center justify-center py-2 text-[#9ca3af] cursor-pointer" data-tab="stats">
             <span class="text-base">📊</span>
             <span class="text-[8px] mt-1 font-bold font-pixel" id="nav-lbl-stats">STATS</span>
           </button>
-
-          <!-- SETTINGS TAB -->
-          <button id="nav-btn-settings" class="stats-tab-nav flex flex-col items-center justify-center py-2 text-[#005a70] cursor-pointer" data-tab="settings">
-            <span class="text-base">⚙️</span>
-            <span class="text-[8px] mt-1 font-bold font-pixel" id="nav-lbl-settings">SETTING</span>
-          </button>
         </nav>
       </footer>
-
+ 
     </div>
-
+ 
     <!-- Retro Lightbox Modal for screenshots -->
     <div id="lightbox-modal" class="fixed inset-0 bg-black bg-opacity-95 hidden z-[9999] justify-center items-center p-4">
-      <div class="relative w-full max-w-md border-4 border-double border-[#00f2ff] bg-[#050b18] p-3 flex flex-col items-center">
+      <div class="relative w-full max-w-md border-4 border-double border-[#9ca3af] bg-[#111317] p-3 flex flex-col items-center">
         <button id="lightbox-close-btn" class="absolute -top-3 -right-3 pixel-btn pixel-btn-red text-[10px] px-2 py-0.5 z-[10000]">X</button>
-        <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] object-contain border border-[#00f2ff]" referrerPolicy="no-referrer" />
-        <div class="text-[9px] text-[#00f2ff] font-mono mt-2" id="lightbox-meta">RECORD ATTACHMENT</div>
+        <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] object-contain border border-[#ffffff]" referrerPolicy="no-referrer" />
+        <div class="text-[9px] text-[#ffffff] font-mono mt-2" id="lightbox-meta">RECORD ATTACHMENT</div>
       </div>
     </div>
 
     <!-- PWA Installation Toast notification -->
-    <div id="pwa-toast" class="fixed bottom-20 left-4 right-4 bg-[#0a1122] border-2 border-neon-cyan p-3 z-50 rounded flex justify-between items-center transition-all opacity-0 pointer-events-none transform translate-y-2 max-w-sm mx-auto">
+    <div id="pwa-toast" class="fixed bottom-20 left-4 right-4 bg-[#111317] border-2 border-neon-cyan p-3 z-50 rounded flex justify-between items-center transition-all opacity-0 pointer-events-none transform translate-y-2 max-w-sm mx-auto">
       <div>
         <div class="text-[9px] font-bold text-white uppercase" id="pwa-toast-title">DETECTION: INSTALL PWA?</div>
-        <div class="text-[8px] text-[#00ff66]" id="pwa-toast-body">Add Win/Loss tracker to your home screen!</div>
+        <div class="text-[8px] text-[#ffffff]" id="pwa-toast-body">Add Win/Loss tracker to your home screen!</div>
       </div>
       <div class="flex gap-2">
         <button id="btn-pwa-install" class="pixel-btn text-[8px] px-2 py-1 uppercase" id="pwa-toast-btn-install">INSTALL</button>

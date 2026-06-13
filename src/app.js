@@ -490,7 +490,6 @@ function applyLocalizationBundle() {
   // Settings
   safeSetInputValue('select-lang', currentLang);
   safeSetInnerText('tab4-title', dictionary.tab4Title);
-  safeSetInnerText('set-lbl-lang', dictionary.lblLang);
   safeSetInnerText('set-lbl-quotes', dictionary.lblQuotes);
   safeSetInnerText('set-btn-save-txt', dictionary.saveText);
   safeSetInnerText('set-lbl-assets', dictionary.lblAssets);
@@ -571,11 +570,12 @@ function initMainEventBindings() {
     lossHeroPanel.classList.remove('active');
     if (drawSecButton) {
       drawSecButton.style.borderStyle = 'solid';
-      drawSecButton.style.borderColor = '#d63bff';
-      drawSecButton.style.backgroundColor = '#1c0e2c';
+      drawSecButton.style.borderColor = '#9ca3af';
+      drawSecButton.style.backgroundColor = '#1a1d24';
     }
     document.getElementById('rec-prompt').innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).recPrompt;
-    document.getElementById('rec-prompt').style.color = '#00f2ff';
+    document.getElementById('rec-prompt').style.color = '#ffffff';
+    updateInputFieldsTheme('win');
     playRecordSelectWinSound();
   });
 
@@ -585,11 +585,12 @@ function initMainEventBindings() {
     winHeroPanel.classList.remove('active');
     if (drawSecButton) {
       drawSecButton.style.borderStyle = 'solid';
-      drawSecButton.style.borderColor = '#d63bff';
-      drawSecButton.style.backgroundColor = '#1c0e2c';
+      drawSecButton.style.borderColor = '#9ca3af';
+      drawSecButton.style.backgroundColor = '#1a1d24';
     }
     document.getElementById('rec-prompt').innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).recPrompt;
-    document.getElementById('rec-prompt').style.color = '#00f2ff';
+    document.getElementById('rec-prompt').style.color = '#ffffff';
+    updateInputFieldsTheme('loss');
     playRecordSelectLossSound();
   });
 
@@ -599,12 +600,13 @@ function initMainEventBindings() {
       lossHeroPanel.classList.remove('active');
       winHeroPanel.classList.remove('active');
       drawSecButton.style.borderStyle = 'double';
-      drawSecButton.style.borderColor = '#00ff66';
-      drawSecButton.style.backgroundColor = 'rgba(214, 59, 255, 0.2)';
+      drawSecButton.style.borderColor = '#ffffff';
+      drawSecButton.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
       
       // update label status prompt
       document.getElementById('rec-prompt').innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).optionDrawChosen;
-      document.getElementById('rec-prompt').style.color = '#d63bff';
+      document.getElementById('rec-prompt').style.color = '#ffffff';
+      updateInputFieldsTheme('draw');
       playSynthesizedTick();
     });
   }
@@ -621,10 +623,10 @@ function initMainEventBindings() {
   hiddenFileInput.addEventListener('change', () => {
     if (hiddenFileInput.files && hiddenFileInput.files[0]) {
       filenameIndicator.innerText = hiddenFileInput.files[0].name.toUpperCase();
-      filenameIndicator.classList.add('text-[#00ff66]');
+      filenameIndicator.classList.add('text-[#ffffff]');
     } else {
       filenameIndicator.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).noFileChosen;
-      filenameIndicator.classList.remove('text-[#00ff66]');
+      filenameIndicator.classList.remove('text-[#ffffff]');
     }
   });
 
@@ -666,16 +668,16 @@ function initMainEventBindings() {
         document.getElementById('input-reason').value = "";
         hiddenFileInput.value = "";
         filenameIndicator.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).noFileChosen;
-        filenameIndicator.classList.remove('text-[#00ff66]');
+        filenameIndicator.classList.remove('text-[#bd53ff]');
 
         // flash notification
         const headerTitle = document.getElementById('header-title');
         const oldTitleText = headerTitle.innerText;
         headerTitle.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).registryCompleted;
-        headerTitle.style.color = "#00ff66";
+        headerTitle.style.color = "#bd53ff";
         setTimeout(() => {
           headerTitle.innerText = oldTitleText;
-          headerTitle.style.color = "#00f2ff";
+          headerTitle.style.color = "#bd53ff";
         }, 2200);
 
         await refreshRecords();
@@ -699,11 +701,11 @@ function initMainEventBindings() {
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       filterBtns.forEach(b => {
-        b.classList.remove('active', 'text-[#00f2ff]');
-        b.classList.add('text-[#005a70]');
+        b.classList.remove('active', 'text-[#ffffff]', 'glow-text-green');
+        b.classList.add('text-[#9ca3af]');
       });
-      btn.classList.add('active', 'text-[#00f2ff]');
-      btn.classList.remove('text-[#005a70]');
+      btn.classList.add('active', 'text-[#ffffff]', 'glow-text-green');
+      btn.classList.remove('text-[#9ca3af]');
 
       const period = btn.getAttribute('data-period');
       updateStatisticsMetrics(period);
@@ -801,14 +803,14 @@ function initMainEventBindings() {
     if (!isBgmPlaying) {
       isBgmPlaying = true;
       if (stateSpan) stateSpan.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).on;
-      bgmBtn.style.borderColor = '#00ff66';
-      bgmBtn.style.color = '#00ff66';
+      bgmBtn.style.borderColor = '#ffffff';
+      bgmBtn.style.color = '#ffffff';
       startLoopingMusic();
     } else {
       isBgmPlaying = false;
       if (stateSpan) stateSpan.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).off;
-      bgmBtn.style.borderColor = '#00f2ff';
-      bgmBtn.style.color = '#00f2ff';
+      bgmBtn.style.borderColor = '#ffffff';
+      bgmBtn.style.color = '#ffffff';
       stopLoopingMusic();
     }
   });
@@ -822,6 +824,49 @@ function initMainEventBindings() {
       document.getElementById('lightbox-modal').style.display = 'none';
     }
   });
+
+  // Load default input style themes based on active choice
+  updateInputFieldsTheme(selectedOutcome);
+}
+
+// Interactive Theme Swapper for the Capcom Dialogue input layout
+function updateInputFieldsTheme(theme) {
+  const frame = document.getElementById('input-fields-frame');
+  const lblReason = document.getElementById('lbl-reason');
+  const lblProof = document.getElementById('lbl-proof');
+  const indicator = document.getElementById('file-name-indicator');
+  const fileBtn = document.getElementById('btn-trigger-upload');
+  
+  if (!frame) return;
+
+  if (theme === 'win') {
+    frame.className = 'capcom-dialog-frame-win p-4 relative mb-4 transition-all duration-300';
+    if (lblReason) lblReason.className = 'block capcom-label-win mb-1.5 uppercase text-[9px] transition-colors duration-300';
+    if (lblProof) lblProof.className = 'block capcom-label-win mb-1.5 uppercase text-[9px] transition-colors duration-300';
+    if (indicator) indicator.style.color = '#a3e8ff';
+    if (fileBtn) {
+      fileBtn.style.backgroundColor = '#093c5c';
+      fileBtn.style.color = '#00f2ff';
+    }
+  } else if (theme === 'loss') {
+    frame.className = 'capcom-dialog-frame-loss p-4 relative mb-4 transition-all duration-300';
+    if (lblReason) lblReason.className = 'block capcom-label-loss mb-1.5 uppercase text-[9px] transition-colors duration-300';
+    if (lblProof) lblProof.className = 'block capcom-label-loss mb-1.5 uppercase text-[9px] transition-colors duration-300';
+    if (indicator) indicator.style.color = '#ff80a3';
+    if (fileBtn) {
+      fileBtn.style.backgroundColor = '#570a1e';
+      fileBtn.style.color = '#ff0055';
+    }
+  } else {
+    frame.className = 'capcom-dialog-frame-neutral p-4 relative mb-4 transition-all duration-300';
+    if (lblReason) lblReason.className = 'block capcom-label-neutral mb-1.5 uppercase text-[9px] transition-colors duration-300';
+    if (lblProof) lblProof.className = 'block capcom-label-neutral mb-1.5 uppercase text-[9px] transition-colors duration-300';
+    if (indicator) indicator.style.color = '#a1acba';
+    if (fileBtn) {
+      fileBtn.style.backgroundColor = '#2c313a';
+      fileBtn.style.color = '#a1acba';
+    }
+  }
 }
 
 // Manage tab UI display states toggler
@@ -862,7 +907,7 @@ function renderTimelineLayout() {
 
   if (scoreRecordsList.length === 0) {
     container.innerHTML = `
-      <div class="border-2 border-dashed border-[#005a70] p-6 text-center text-[#005a70]">
+      <div class="border-2 border-dashed border-[#9ca3af] p-6 text-center text-white">
         ${dictionary.noRecordsYet}
       </div>
     `;
@@ -875,41 +920,40 @@ function renderTimelineLayout() {
   scoreRecordsList.forEach(rec => {
     const cardEl = document.createElement('div');
     
-    // Choose border colors mirroring Rockman or Zero theme styles
-    let borderClass = 'border-neon-cyan';
-    let labelColor = 'text-[#00f2ff] glow-text-blue';
+    // Choose dialogue frame styles mirroring Capcom theme styles
+    let frameClass = 'capcom-dialog-frame-neutral';
+    let labelColor = 'text-[#a1acba]';
     let outcomeText = dictionary.outcomeDraw;
-    let avatarName = dictionary.avatarSystem;
+    let borderThumb = 'border-[#a1acba]';
 
     if (rec.type === 'win') {
-      borderClass = 'border-[#00f2ff] neon-border-blue';
-      labelColor = 'text-[#00f2ff] glow-text-blue';
+      frameClass = 'capcom-dialog-frame-win';
+      labelColor = 'text-[#00f2ff] glow-text-blue font-pixel font-bold';
       outcomeText = dictionary.outcomeWin;
-      avatarName = dictionary.avatarX;
+      borderThumb = 'border-[#a3e8ff]';
     } else if (rec.type === 'loss') {
-      borderClass = 'border-[#ff0055] neon-border-red';
-      labelColor = 'text-[#ff0055] glow-text-red font-bold';
+      frameClass = 'capcom-dialog-frame-loss';
+      labelColor = 'text-[#ff0055] glow-text-red font-pixel font-bold';
       outcomeText = dictionary.outcomeLoss;
-      avatarName = dictionary.avatarZero;
+      borderThumb = 'border-[#ff80a3]';
     }
 
     // Format date string beautifully
     const recordDateString = new Date(rec.created_at).toLocaleString();
 
-    cardEl.className = `x4-hero-panel ${borderClass} p-3 flex flex-col relative my-1`;
+    cardEl.className = `${frameClass} p-4 flex flex-col relative my-2.5`;
     cardEl.innerHTML = `
-      <div class="x4-corner-bracket"></div>
-      <div class="flex justify-between items-start mb-1 gap-2">
+      <div class="flex justify-between items-start mb-2 gap-2">
         <div class="flex items-center gap-1">
           <span class="font-bold uppercase text-[10px] ${labelColor}">${outcomeText}</span>
         </div>
-        <span class="font-mono text-[8px] text-[#005a70]">${recordDateString}</span>
+        <span class="font-mono text-[8px] text-gray-400">${recordDateString}</span>
       </div>
-      <p class="text-white text-[10px] font-mono leading-relaxed mt-1 mb-2 whitespace-pre-wrap">${rec.reason || dictionary.noComments}</p>
+      <p class="text-white text-[11px] font-pixel leading-relaxed mt-1 mb-2.5 whitespace-pre-wrap">${rec.reason || dictionary.noComments}</p>
       
       ${rec.image_path ? `
         <div class="w-full flex justify-start my-1.5">
-          <div class="max-w-[120px] max-h-[90px] overflow-hidden border border-[#00f2ff] bg-black cursor-pointer rounded scale-button duration-200 hover:scale-105 select-none proof-image" data-src="${rec.image_path}">
+          <div class="max-w-[130px] max-h-[92px] overflow-hidden border ${borderThumb} bg-black cursor-pointer rounded-sm scale-button duration-200 hover:scale-105 select-none proof-image" data-src="${rec.image_path}">
             <img src="${rec.image_path}" class="w-full h-full object-cover" alt="Voucher screenshot" referrerPolicy="no-referrer">
           </div>
         </div>
@@ -1029,7 +1073,7 @@ function updateStatisticsMetrics(period = 'day') {
     if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/defaults/images/tie_meme.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusEqual;
-      badgeSpan.style.color = '#d63bff';
+      badgeSpan.style.color = '#ffffff';
       if (badgeSpan.className.includes('glow-text-blue') || badgeSpan.className.includes('glow-text-red')) {
         badgeSpan.classList.remove('glow-text-blue', 'glow-text-red');
       }
