@@ -26,13 +26,13 @@ RUN npm ci --only=production
 
 # Copy compiled assets and server from builder phase
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/assets/images ./src/assets/images
+COPY --from=builder /app/public ./public
 
 # Ensure data directory exists for the volume
-RUN mkdir -p /app/data
+RUN mkdir -p /app/public/defaults
 
 # Declare persistent data volume mount
-VOLUME ["/app/data"]
+VOLUME ["/app/public/defaults"]
 
 EXPOSE 3000
 

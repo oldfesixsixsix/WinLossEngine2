@@ -12,5 +12,6 @@
   "tab_sound_path": "/defaults/sounds/tab.mp3",
   "submit_sound_path": "/defaults/sounds/submit.mp3",
   "select_win_sound_path": "/defaults/sounds/winloss.mp3",
-  "select_loss_sound_path": "/defaults/sounds/winloss.mp3"
+  "select_loss_sound_path": "/defaults/sounds/winloss.mp3",
+  "delete_sound_path": "/defaults/sounds/delete.mp3"
 }

@@ -75,7 +75,8 @@ const TRANSLATIONS = {
     tabSe: "下部タブ切替SE音:",
     selectWinSe: "記録-勝利選択SE音:",
     selectLossSe: "記録-敗北選択SE音:",
-    submitSe: "登録・保存SE音:"
+    submitSe: "登録・保存SE音:",
+    deleteSe: "記録削除SE音:"
   },
   'zh-TW': {
     headerStage: "ST-04: 戰場",
@@ -150,7 +151,8 @@ const TRANSLATIONS = {
     tabSe: "下方頁籤切換音效:",
     selectWinSe: "紀錄 WIN 選擇音效:",
     selectLossSe: "紀錄 LOSS 選擇音效:",
-    submitSe: "登錄提交儲存音效:"
+    submitSe: "登錄提交儲存音效:",
+    deleteSe: "刪除歷史紀錄音效:"
   },
   'zh-CN': {
     headerStage: "ST-04: 战场",
@@ -225,7 +227,8 @@ const TRANSLATIONS = {
     tabSe: "下方面签切换音效:",
     selectWinSe: "记录 WIN 选择音效:",
     selectLossSe: "记录 LOSS 选择音效:",
-    submitSe: "登录提交保存音效:"
+    submitSe: "登录提交保存音效:",
+    deleteSe: "删除历史记录音效:"
   },
   en: {
     headerStage: "ST-04: ARENA",
@@ -300,7 +303,8 @@ const TRANSLATIONS = {
     tabSe: "Bottom Tab Select SE:",
     selectWinSe: "Record WIN Select SE:",
     selectLossSe: "Record LOSS Select SE:",
-    submitSe: "Submit & Save SE:"
+    submitSe: "Submit & Save SE:",
+    deleteSe: "Delete Record SE:"
   }
 };
 
@@ -333,7 +337,7 @@ let selectedOutcome = 'win'; // 'win', 'loss', or 'draw'
 let synthesizedIntervalId = null;
 let currentSynthAudioCtx = null;
 let customBgmInstance = null; // HTMLAudioElement for custom uploaded BGM
-let isBgmPlaying = false;
+let isBgmPlaying = true;
 
 // Resolve quotes properly depending on current selected language
 function getLocalizedQuote(rawQuoteStr, fallbackDefault) {
@@ -361,6 +365,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Set default active tab
   switchActiveTab('record');
+
+  // Start BGM if enabled (handles auto-play policy)
+  if (isBgmPlaying) {
+    startLoopingMusic();
+  }
 });
 
 // Load backend configs from SQLite
@@ -511,6 +520,7 @@ function applyLocalizationBundle() {
   safeSetInnerText('set-lbl-select-win-se', dictionary.selectWinSe);
   safeSetInnerText('set-lbl-select-loss-se', dictionary.selectLossSe);
   safeSetInnerText('set-lbl-submit-se', dictionary.submitSe);
+  safeSetInnerText('set-lbl-delete-se', dictionary.deleteSe);
 
   // Footer Navigation Bar
   const isChinese = currentLang === 'zh-TW' || currentLang === 'zh-CN';
@@ -533,7 +543,17 @@ function applyLocalizationBundle() {
   // Lightbox Media Attachment Label
   safeSetInnerText('lightbox-meta', dictionary.lightboxMeta);
 
-  // BGM Active Status Text Indicator
+  // BGM Active Status Text Indicator & Styling
+  const bgmBtn = document.getElementById('bgm-ctrl-btn');
+  if (bgmBtn) {
+    if (isBgmPlaying) {
+      bgmBtn.style.borderColor = '#00ff66';
+      bgmBtn.style.color = '#00ff66';
+    } else {
+      bgmBtn.style.borderColor = '#00f2ff';
+      bgmBtn.style.color = '#00f2ff';
+    }
+  }
   safeSetInnerText('bgm-status-text', isBgmPlaying ? dictionary.on : dictionary.off);
 
   // Ensure dynamic statistics metrics & quotes match the dictionary instantly
@@ -989,7 +1009,7 @@ function renderTimelineLayout() {
         try {
           const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
           if (res.ok) {
-            playSynthesizedLossSound();
+            playDeleteSound();
             refreshRecords();
           } else {
             alert(dictionary.alertDeleteFailure);
@@ -1304,6 +1324,13 @@ function playSubmitSound() {
   audio.play().catch(() => playSynthesizedSubmitSound());
 }
 
+function playDeleteSound() {
+  const chosenPath = (backendSettings && backendSettings.delete_sound_path) || '/defaults/sounds/delete.mp3';
+  const audio = new Audio(chosenPath);
+  audio.volume = 0.55;
+  audio.play().catch(() => playSynthesizedLossSound());
+}
+
 function playSynthesizedSubmitSound() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) return;
@@ -1367,8 +1394,16 @@ function startLoopingMusic() {
   });
 
   customBgmInstance.play().catch(err => {
-    console.warn('BGM path playback failed (might be 404 or gesture constraint). Fallbacking to Synth:', err);
-    triggerFallback();
+    console.warn('BGM auto-play blocked by browser. Waiting for interaction.', err);
+    // Silent fallback, wait for any common interaction to resume
+    const unlockEvents = ['click', 'touchstart', 'mousedown', 'keydown'];
+    const startOnInteraction = () => {
+      if (isBgmPlaying && customBgmInstance) {
+        customBgmInstance.play().catch(() => triggerFallback());
+      }
+      unlockEvents.forEach(evt => document.removeEventListener(evt, startOnInteraction));
+    };
+    unlockEvents.forEach(evt => document.addEventListener(evt, startOnInteraction));
   });
 }
 

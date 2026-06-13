@@ -1,10 +1,31 @@
 [
   {
-    "id": 21,
-    "type": "loss",
+    "id": 24,
+    "type": "win",
     "reason": "",
     "image_path": null,
-    "created_at": "2026-06-12T15:48:42.054Z"
+    "created_at": "2026-06-13T04:14:38.667Z"
+  },
+  {
+    "id": 23,
+    "type": "win",
+    "reason": "",
+    "image_path": null,
+    "created_at": "2026-06-13T04:05:47.311Z"
+  },
+  {
+    "id": 22,
+    "type": "loss",
+    "reason": "csacssca",
+    "image_path": null,
+    "created_at": "2026-06-13T04:04:12.568Z"
+  },
+  {
+    "id": 21,
+    "type": "loss",
+    "reason": "sqs",
+    "image_path": null,
+    "created_at": "2026-06-13T04:03:57.093Z"
   },
   {
     "id": 20,
@@ -133,10 +154,10 @@
     "created_at": "2026-06-12T14:52:59.771Z"
   },
   {
-    "id": 22,
-    "type": "loss",
+    "id": 25,
+    "type": "win",
     "reason": "",
     "image_path": null,
-    "created_at": "2026-06-12T15:48:45.315Z"
+    "created_at": "2026-06-13T04:48:33.836Z"
   }
 ]

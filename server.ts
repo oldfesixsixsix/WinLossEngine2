@@ -3,7 +3,6 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
-import { createServer as createViteServer } from 'vite';
 
 const app = express();
 const PORT = 3000;
@@ -81,6 +80,7 @@ class JsonDatabase {
       { key: 'loss_sound_path', value: '/defaults/sounds/tab.mp3' },
       { key: 'tab_sound_path', value: '/defaults/sounds/tab.mp3' },
       { key: 'submit_sound_path', value: '/defaults/sounds/submit.mp3' },
+      { key: 'delete_sound_path', value: '/defaults/sounds/delete.mp3' },
       { key: 'select_win_sound_path', value: '/defaults/sounds/winloss.mp3' },
       { key: 'select_loss_sound_path', value: '/defaults/sounds/winloss.mp3' }
     ];
@@ -343,7 +343,8 @@ app.post('/api/settings/assets', upload.fields([
   { name: 'tab_sound_file', maxCount: 1 },
   { name: 'select_win_sound_file', maxCount: 1 },
   { name: 'select_loss_sound_file', maxCount: 1 },
-  { name: 'submit_sound_file', maxCount: 1 }
+  { name: 'submit_sound_file', maxCount: 1 },
+  { name: 'delete_sound_file', maxCount: 1 }
 ]), (req, res) => {
   const filesObj = req.files as Record<string, Express.Multer.File[]>;
   if (!filesObj) {
@@ -382,6 +383,9 @@ app.post('/api/settings/assets', upload.fields([
   if (filesObj['submit_sound_file']) {
     updates['submit_sound_path'] = `/uploads/${filesObj['submit_sound_file'][0].filename}`;
   }
+  if (filesObj['delete_sound_file']) {
+    updates['delete_sound_path'] = `/uploads/${filesObj['delete_sound_file'][0].filename}`;
+  }
 
   try {
     db.updateSettings(updates);
@@ -394,6 +398,7 @@ app.post('/api/settings/assets', upload.fields([
 // Configure Vite integration for Hot Reload & Bundling
 async function start() {
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'custom',

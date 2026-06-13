@@ -1,3 +1,10 @@
+cd WinLossEngine2
+docker compose up -d --build
+
+default data settings: settings.json
+
+---
+
 # 🎮 X4 Retro Meme Arena - Default Assets Folder (預設音效與圖片設定指南)
 
 Here, you can drop your default sounds and images. The application will automatically detect and use them as fallbacks if no custom files are uploaded through the browser Settings UI.
