@@ -2,9 +2,4 @@ node_modules
 dist
 .git
 data
-win-loss-data
-defaults
 *.db
-*.log
-.env*
-!.env.example
