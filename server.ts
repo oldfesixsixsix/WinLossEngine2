@@ -19,7 +19,12 @@ try {
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const ASSETS_DIR = path.join(DATA_DIR, 'assets');
-const PUBLIC_DEFAULTS_DIR = path.join(process.cwd(), 'public', 'defaults');
+
+// Resolve the correct public defaults directory based on NODE_ENV (production loads from dist)
+const PUBLIC_DEFAULTS_DIR = process.env.NODE_ENV === 'production'
+  ? path.join(process.cwd(), 'dist', 'defaults')
+  : path.join(process.cwd(), 'public', 'defaults');
+
 const PUBLIC_IMAGES_DIR = path.join(PUBLIC_DEFAULTS_DIR, 'images');
 const PUBLIC_SOUNDS_DIR = path.join(PUBLIC_DEFAULTS_DIR, 'sounds');
 
@@ -37,28 +42,16 @@ if (!fs.existsSync(PUBLIC_SOUNDS_DIR)) {
   fs.mkdirSync(PUBLIC_SOUNDS_DIR, { recursive: true });
 }
 
-// Copy default pre-generated pixel art images to persistent data/assets folder and public defaults folder
+// 1. Copy default pre-generated pixel art images to public defaults folder if it's currently empty
 const defaultMapping = [
-  { src: 'rockman_win_1781102046763.png', dest: 'rockman_win.png', uploadDest: 'rockman_win.png' },
-  { src: 'zero_lose_1781102061526.png', dest: 'zero_lose.png', uploadDest: 'zero_lose.png' },
-  { src: 'tie_meme_1781102077141.png', dest: 'tie_meme.png', uploadDest: 'tie_meme.png' }
+  { src: 'rockman_win_1781102046763.png', dest: 'rockman_win.png' },
+  { src: 'zero_lose_1781102061526.png', dest: 'zero_lose.png' },
+  { src: 'tie_meme_1781102077141.png', dest: 'tie_meme.png' }
 ];
 
 for (const map of defaultMapping) {
   const sourcePath = path.join(process.cwd(), 'src', 'assets', 'images', map.src);
   if (fs.existsSync(sourcePath)) {
-    // Copy to persistent data assets
-    const targetUploadPath = path.join(ASSETS_DIR, map.uploadDest);
-    if (!fs.existsSync(targetUploadPath)) {
-      try {
-        fs.copyFileSync(sourcePath, targetUploadPath);
-        console.log(`Copied default image ${map.src} to persistent: ${targetUploadPath}`);
-      } catch (err) {
-        console.error(`Failed to copy to persistent: ${map.src}`, err);
-      }
-    }
-
-    // Copy to public defaults images
     const targetPublicPath = path.join(PUBLIC_IMAGES_DIR, map.dest);
     if (!fs.existsSync(targetPublicPath)) {
       try {
@@ -70,6 +63,43 @@ for (const map of defaultMapping) {
     }
   }
 }
+
+// 2. Automatically copy ALL files from default directories to persistent volume assets (/uploads/*) if missing
+function copyAllDefaultsToPersistent() {
+  if (fs.existsSync(PUBLIC_IMAGES_DIR)) {
+    try {
+      const files = fs.readdirSync(PUBLIC_IMAGES_DIR);
+      files.forEach((file) => {
+        const srcPath = path.join(PUBLIC_IMAGES_DIR, file);
+        const destPath = path.join(ASSETS_DIR, file);
+        if (fs.statSync(srcPath).isFile() && !fs.existsSync(destPath)) {
+          fs.copyFileSync(srcPath, destPath);
+          console.log(`Auto-mirrored default image ${file} to persistent assets: ${destPath}`);
+        }
+      });
+    } catch (e) {
+      console.error('Error copying default images to persistent volume:', e);
+    }
+  }
+
+  if (fs.existsSync(PUBLIC_SOUNDS_DIR)) {
+    try {
+      const files = fs.readdirSync(PUBLIC_SOUNDS_DIR);
+      files.forEach((file) => {
+        const srcPath = path.join(PUBLIC_SOUNDS_DIR, file);
+        const destPath = path.join(ASSETS_DIR, file);
+        if (fs.statSync(srcPath).isFile() && !fs.existsSync(destPath)) {
+          fs.copyFileSync(srcPath, destPath);
+          console.log(`Auto-mirrored default sound ${file} to persistent assets: ${destPath}`);
+        }
+      });
+    } catch (e) {
+      console.error('Error copying default sounds to persistent volume:', e);
+    }
+  }
+}
+
+copyAllDefaultsToPersistent();
 
 // Pure JS/TS file-based JSON database engine for 100% hosting environment reliability without binary conflicts
 class JsonDatabase {
@@ -90,17 +120,29 @@ class JsonDatabase {
       fs.writeFileSync(this.userSettingsFile, JSON.stringify({}, null, 2), 'utf-8');
     }
     if (!fs.existsSync(this.settingsFile)) {
+      const extWin = fs.existsSync(path.join(ASSETS_DIR, 'win.jpg')) ? 'win.jpg' : 'rockman_win.png';
+      const extLoss = fs.existsSync(path.join(ASSETS_DIR, 'loss.jpg')) ? 'loss.jpg' : 'zero_lose.png';
+      const extTie = fs.existsSync(path.join(ASSETS_DIR, 'tie.jpg')) ? 'tie.jpg' : 'tie_meme.png';
+
+      const extBgm = fs.existsSync(path.join(ASSETS_DIR, 'bgm.mp3')) ? '/uploads/bgm.mp3' : '';
+      const extWinSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) 
+        ? '/uploads/winloss.mp3' 
+        : (fs.existsSync(path.join(ASSETS_DIR, 'win.mp3')) ? '/uploads/win.mp3' : '');
+      const extLossSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) 
+        ? '/uploads/winloss.mp3' 
+        : (fs.existsSync(path.join(ASSETS_DIR, 'loss.mp3')) ? '/uploads/loss.mp3' : '');
+
       const defaultSettings = [
-        { key: 'win_meme_url', value: '/uploads/rockman_win.png' },
+        { key: 'win_meme_url', value: `/uploads/${extWin}` },
         { key: 'win_meme_quote', value: '不愧是你！|Excellent work!|さすがですね！' },
-        { key: 'loss_meme_url', value: '/uploads/zero_lose.png' },
+        { key: 'loss_meme_url', value: `/uploads/${extLoss}` },
         { key: 'loss_meme_quote', value: '投降輸一半|Mission Failed...|何者なんだ、これ...' },
-        { key: 'draw_meme_url', value: '/uploads/tie_meme.png' },
+        { key: 'draw_meme_url', value: `/uploads/${extTie}` },
         { key: 'draw_meme_quote', value: '沒輸沒贏|Double KO!|勝負つかず...' },
         { key: 'lang', value: 'ja' },
-        { key: 'bgm_path', value: '' },
-        { key: 'win_sound_path', value: '' },
-        { key: 'loss_sound_path', value: '' }
+        { key: 'bgm_path', value: extBgm },
+        { key: 'win_sound_path', value: extWinSound },
+        { key: 'loss_sound_path', value: extLossSound }
       ];
       const settingsObj: Record<string, string> = {};
       defaultSettings.forEach(s => {

@@ -7,5 +7,7 @@ services:
       - "3000:3000"
     volumes:
       - ./win-loss-data:/app/data
+      # Optional: Mount your customized defaults folder to override pre-installed assets directly from host
+      # - ./defaults:/app/dist/defaults
     environment:
       - NODE_ENV=production
