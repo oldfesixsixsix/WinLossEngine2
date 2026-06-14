@@ -4,6 +4,7 @@ import fs from 'fs';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 const PORT = 3000;
@@ -321,6 +322,34 @@ app.get('/api/health', (req, res) => {
 
 // Helper to extract user_id from headers or query parameters for versatile OIDC / multi-tenant execution
 const getUserId = (req: express.Request): string | undefined => {
+  // 1. Attempt to get verified sub from Authorization Bearer token (Supabase Auth Session)
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    const jwtSecret = process.env.SUPABASE_JWT_SECRET;
+    if (jwtSecret) {
+      try {
+        const decoded = jwt.verify(token, jwtSecret) as any;
+        if (decoded && decoded.sub) {
+          return decoded.sub;
+        }
+      } catch (err: any) {
+        console.warn('JWT verification failed (verify error):', err.message);
+      }
+    } else {
+      // Fallback: If secret is not provided, decode without verifying (extremely useful for quick local dev or dev setup)
+      try {
+        const decoded = jwt.decode(token) as any;
+        if (decoded && decoded.sub) {
+          return decoded.sub;
+        }
+      } catch (err: any) {
+        console.warn('JWT decode failed:', err.message);
+      }
+    }
+  }
+
+  // 2. Fallback to older header x-user-id or query parameters for simpler multi-tenant operations
   const val = req.headers['x-user-id'] || req.query.user_id;
   if (typeof val === 'string' && val.trim() !== '') {
     return val.trim();

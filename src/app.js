@@ -1,4 +1,28 @@
 // Rockman X4 Duel Win/Loss Tracker - CLIENT CONTROLLER
+import { supabase, isSupabaseConfigured } from './supabase.js';
+
+// Exception-safe, high-precision secureFetch wrapper to inject Supabase Auth header automatically
+async function secureFetch(url, options = {}) {
+  const headers = options.headers || {};
+  let currentHeaders = { ...headers };
+  
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        currentHeaders['Authorization'] = `Bearer ${session.access_token}`;
+        currentHeaders['x-user-id'] = session.user.id;
+      }
+    } catch (err) {
+      console.warn('Secure fetch failed to extract Supabase tokens', err);
+    }
+  }
+  
+  return fetch(url, {
+    ...options,
+    headers: currentHeaders
+  });
+}
 
 // Translation Bundles
 const TRANSLATIONS = {
@@ -354,14 +378,247 @@ function getLocalizedQuote(rawQuoteStr, fallbackDefault) {
 
 // 1. Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
+  setupSupabaseAuth();
   await loadSettingsFromServer();
   await refreshRecords();
   initMainEventBindings();
   setupPWAInstaller();
   
   // Set default active tab
-  switchActiveTab('record');
+  switchActiveTab('home');
 });
+
+// Setup Supabase Auth Station Bindings & Controller
+function setupSupabaseAuth() {
+  const unconfiguredEl = document.getElementById('auth-state-unconfigured');
+  const loggedOutEl = document.getElementById('auth-state-logged-out');
+  const loggedInEl = document.getElementById('auth-state-logged-in');
+  
+  const btnBypass = document.getElementById('auth-btn-bypass');
+  const btnGoogle = document.getElementById('auth-btn-google');
+  const btnGithub = document.getElementById('auth-btn-github');
+  const btnSignout = document.getElementById('auth-btn-signout');
+  const statusMsg = document.getElementById('auth-status-msg');
+  const userEmailSpan = document.getElementById('auth-user-email');
+  const userUuidSpan = document.getElementById('auth-user-uuid');
+  
+  const authToggleBtn = document.getElementById('auth-toggle-collapse-btn');
+  const authContentArea = document.getElementById('auth-panel-content-area');
+
+  // Top-Right Header Widgets
+  const headerLoginBtn = document.getElementById('header-login-btn');
+  const headerUserProfile = document.getElementById('header-user-profile');
+  const headerUserAvatar = document.getElementById('header-user-avatar');
+  const headerUserDisplay = document.getElementById('header-user-display');
+  const headerLogoutBtn = document.getElementById('header-logout-btn');
+
+  // Panel toggle collapse
+  let isCollapsed = false;
+  if (authToggleBtn && authContentArea) {
+    authToggleBtn.addEventListener('click', () => {
+      isCollapsed = !isCollapsed;
+      if (isCollapsed) {
+        authContentArea.classList.add('hidden');
+        authToggleBtn.innerText = 'EXPAND';
+      } else {
+        authContentArea.classList.remove('hidden');
+        authToggleBtn.innerText = 'MINIMIZE';
+      }
+    });
+  }
+
+  // Helper update states
+  async function updateAuthState() {
+    try {
+      const isConfigured = isSupabaseConfigured() && supabase;
+      let session = null;
+      if (isConfigured) {
+        const { data } = await supabase.auth.getSession();
+        session = data.session;
+      } else {
+        if (unconfiguredEl) unconfiguredEl.classList.remove('hidden');
+        if (loggedOutEl) loggedOutEl.classList.add('hidden');
+        if (loggedInEl) loggedInEl.classList.add('hidden');
+        if (headerLoginBtn) headerLoginBtn.classList.add('hidden');
+        if (headerUserProfile) headerUserProfile.classList.add('hidden');
+        return;
+      }
+      
+      const guestId = sessionStorage.getItem('guest_user_id');
+
+      if (session && session.user) {
+        if (loggedInEl) loggedInEl.classList.remove('hidden');
+        if (loggedOutEl) loggedOutEl.classList.add('hidden');
+        if (userEmailSpan) userEmailSpan.innerText = session.user.email;
+        if (userUuidSpan) userUuidSpan.innerText = session.user.id;
+
+        // Top-Right Header configs
+        if (headerLoginBtn) headerLoginBtn.classList.add('hidden');
+        if (headerUserProfile) headerUserProfile.classList.remove('hidden');
+        
+        const userMeta = session.user.user_metadata || {};
+        const avatarUrl = userMeta.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(session.user.email)}`;
+        const displayName = userMeta.name || userMeta.full_name || session.user.email.split('@')[0];
+
+        if (headerUserAvatar) headerUserAvatar.src = avatarUrl;
+        if (headerUserDisplay) headerUserDisplay.innerText = displayName;
+
+        // Dynamic Database Subheader indicator
+        const dbLabel = document.getElementById('header-sub-r');
+        if (dbLabel) dbLabel.innerText = "DATABASE: CLOUD SQL / SUPABASE";
+
+      } else if (guestId) {
+        if (loggedInEl) loggedInEl.classList.remove('hidden');
+        if (loggedOutEl) loggedOutEl.classList.add('hidden');
+        if (userEmailSpan) userEmailSpan.innerText = 'TRANSIENT GUEST (訪客)';
+        if (userUuidSpan) userUuidSpan.innerText = guestId;
+
+        // Top-Right Header configs
+        if (headerLoginBtn) headerLoginBtn.classList.add('hidden');
+        if (headerUserProfile) headerUserProfile.classList.remove('hidden');
+        
+        const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=Guest_${encodeURIComponent(guestId)}`;
+        if (headerUserAvatar) headerUserAvatar.src = avatarUrl;
+        if (headerUserDisplay) headerUserDisplay.innerText = '訪客 (GUEST)';
+
+        // Dynamic Database Subheader indicator
+        const dbLabel = document.getElementById('header-sub-r');
+        if (dbLabel) dbLabel.innerText = "DATABASE: TRANSIENT SESSION";
+
+      } else {
+        if (loggedInEl) loggedInEl.classList.add('hidden');
+        if (loggedOutEl) loggedOutEl.classList.remove('hidden');
+
+        // Top-Right Header configs
+        if (headerLoginBtn) headerLoginBtn.classList.remove('hidden');
+        if (headerUserProfile) headerUserProfile.classList.add('hidden');
+
+        // Dynamic Database Subheader indicator
+        const dbLabel = document.getElementById('header-sub-r');
+        if (dbLabel) dbLabel.innerText = "DATABASE: SQLITE3";
+      }
+    } catch (err) {
+      console.warn('Error reading auth state', err);
+    }
+  }
+
+  // Watch Auth channel changes
+  if (isSupabaseConfigured() && supabase) {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      await updateAuthState();
+      // Automatically hot reload data when users sign in or sign out
+      await loadSettingsFromServer();
+      await refreshRecords();
+    });
+  }
+
+  // Local/Guest Mode bypass action
+  if (btnBypass) {
+    btnBypass.addEventListener('click', async () => {
+      // Setup browser or tab scoped transient guest session
+      const randomId = 'guest_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+      sessionStorage.setItem('guest_user_id', randomId);
+      
+      if (statusMsg) statusMsg.innerText = 'GUEST ACCESS SECURED.';
+      
+      await updateAuthState();
+      await loadSettingsFromServer();
+      await refreshRecords();
+
+      // Automatically send visitor to the log sheets / record panel to play
+      switchActiveTab('record');
+    });
+  }
+
+  // Sign out ACTION
+  if (btnSignout) {
+    btnSignout.addEventListener('click', async () => {
+      if (isSupabaseConfigured() && supabase) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await supabase.auth.signOut();
+        }
+      }
+      sessionStorage.removeItem('guest_user_id');
+      await updateAuthState();
+      await loadSettingsFromServer();
+      await refreshRecords();
+    });
+  }
+
+  // Top-Right Header trigger Click to Login Tab
+  if (headerLoginBtn) {
+    headerLoginBtn.addEventListener('click', () => {
+      switchActiveTab('home');
+      playTabSelectSound();
+      
+      const station = document.getElementById('auth-station');
+      if (station) {
+        station.classList.add('border-neon-cyan');
+        station.classList.add('animate-pulse');
+        setTimeout(() => {
+          station.classList.remove('border-neon-cyan');
+          station.classList.remove('animate-pulse');
+        }, 1500);
+      }
+    });
+  }
+
+  // Top-Right Header logout triggers
+  if (headerLogoutBtn) {
+    headerLogoutBtn.addEventListener('click', async () => {
+      if (isSupabaseConfigured() && supabase) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await supabase.auth.signOut();
+        }
+      }
+      sessionStorage.removeItem('guest_user_id');
+      await updateAuthState();
+      await loadSettingsFromServer();
+      await refreshRecords();
+      
+      switchActiveTab('home');
+    });
+  }
+
+  // OAuth Google
+  if (btnGoogle) {
+    btnGoogle.addEventListener('click', async () => {
+      if (!isSupabaseConfigured() || !supabase) return;
+      const redirectUrlStr = window.location.origin;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrlStr
+        }
+      });
+      if (error) {
+        if (statusMsg) statusMsg.innerText = `OAUTH ERROR: ${error.message}`;
+      }
+    });
+  }
+
+  // OAuth GitHub
+  if (btnGithub) {
+    btnGithub.addEventListener('click', async () => {
+      if (!isSupabaseConfigured() || !supabase) return;
+      const redirectUrlStr = window.location.origin;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: redirectUrlStr
+        }
+      });
+      if (error) {
+        if (statusMsg) statusMsg.innerText = `OAUTH ERROR: ${error.message}`;
+      }
+    });
+  }
+
+  // Fetch state first time
+  updateAuthState();
+}
 
 // Load backend configs from SQLite
 // Safe DOM manipulation helpers to guarantee 100% crash-free UI updates
@@ -403,7 +660,7 @@ async function safeParseJson(response) {
 
 async function loadSettingsFromServer() {
   try {
-    const response = await fetch('/api/settings');
+    const response = await secureFetch('/api/settings');
     if (response.ok) {
       const data = await safeParseJson(response);
       if (data) {
@@ -436,7 +693,7 @@ async function loadSettingsFromServer() {
 // Fetch all duel records and load statistics dashboards
 async function refreshRecords() {
   try {
-    const response = await fetch('/api/records');
+    const response = await secureFetch('/api/records');
     if (response.ok) {
       const data = await safeParseJson(response);
       if (data) {
@@ -512,13 +769,239 @@ function applyLocalizationBundle() {
   safeSetInnerText('set-lbl-select-loss-se', dictionary.selectLossSe);
   safeSetInnerText('set-lbl-submit-se', dictionary.submitSe);
 
+  // Home Page introduction dynamic content update
+  const homeIntroWidget = document.getElementById('home-intro-widget');
+  if (homeIntroWidget) {
+    if (currentLang === 'zh-TW') {
+      homeIntroWidget.innerHTML = `
+            <div class="flex items-center gap-2 border-b border-[#3b3f46] pb-2 mb-2 select-none">
+              <span class="text-xs text-neon-cyan">👾</span>
+              <h3 class="text-[10px] font-bold uppercase tracking-widest font-pixel font-mono text-white">SYS-INTRO: DUEL MEME HUB (洛克人戰役對決終端)</h3>
+            </div>
+            
+            <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="text-white font-bold">歡迎來到 洛克人 X4 戰役決鬥終端紀錄系統！</span>
+                這是一個融合 16/32 位元復古大型街機美學（CRT 螢幕掃描濾鏡、Capcom 經典冷白色調、動態 Chiptune 音效合成器）與全新雲端/本地多登入身分管理的決鬥追蹤裝置。
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="font-bold text-white">雙核模式選擇：</span>
+                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
+                  <li><strong class="text-neon-cyan">雲端認證（Google / GitHub 認證）</strong>：儲存在 Supabase 高速雲端中，您的對決戰績、自訂迷因語錄與上傳的獨創音效皆能永久同步跟隨帳號，換裝置不遺失。</li>
+                  <li><strong class="text-[#ffd700]">極速訪客模式（Transient Guest）</strong>：零門檻點選，完美排除 IDP 註冊繁雜步驟。我們利用 <span class="text-[#ffd700] underline">SessionStorage</span> 連接機制，<strong class="text-white">只要關閉瀏覽器網頁分頁，該次對決數據將即刻徹底釋放消失！</strong>（適合即席測試）</li>
+                </ul>
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-[#ff3c3c] select-none">▶</span> 
+                <span class="font-bold text-white">全機能調配功能：</span>
+                <p class="mt-1 ml-2 text-[9.5px] leading-relaxed text-[#a4bdcf]/90">
+                  🎮 <strong>對局申報</strong>：記錄每一秒的 Win / Lost / Tie，自由備註對決原因，甚至上傳實體圖片證據。<br>
+                  📊 <strong>流向視覺解析</strong>：內置 2D 環形勝率透視圖，與雙曲線全記錄歷史趨勢追蹤。<br>
+                  🎵 <strong>背景音樂覆寫</strong>：支援上傳覆寫背景 BGM 與各種操作提示音效！
+                </p>
+              </div>
+
+              <div class="border-t border-[#3b3f46]/50 pt-2 text-[8px] text-[#9ca3af] font-mono text-center uppercase tracking-widest select-none">
+                -- COGNITIVE ENGINE READY FOR COMBAT --
+              </div>
+            </div>`;
+    } else if (currentLang === 'zh-CN') {
+      homeIntroWidget.innerHTML = `
+            <div class="flex items-center gap-2 border-b border-[#3b3f46] pb-2 mb-2 select-none">
+              <span class="text-xs text-neon-cyan">👾</span>
+              <h3 class="text-[10px] font-bold uppercase tracking-widest font-pixel font-mono text-white">SYS-INTRO: DUEL MEME HUB (洛克人战役对决终端)</h3>
+            </div>
+            
+            <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="text-white font-bold">欢迎来到 洛克人 X4 战役决斗终端纪录系统！</span>
+                这是一个融合 16/32 位元复古大型街机美学（CRT 屏幕扫描滤镜、Capcom 经典冷白色调、动态 Chiptune 音效合成器）与全新云端/本地多登录身份管理的决斗追踪装置。
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="font-bold text-white">双核模式选择：</span>
+                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
+                  <li><strong class="text-neon-cyan">云端认证（Google / GitHub 认证）</strong>：储存在 Supabase 高速云端中，您的对决战绩、自订迷因语录与上传的独创音效皆能永久同步跟随帐号，换装置不遗失。</li>
+                  <li><strong class="text-[#ffd700]">极速 guest 模式（Transient Guest）</strong>：零门槛点选，完美排除 IDP 注册繁杂步骤。我们利用 <span class="text-[#ffd700] underline">SessionStorage</span> 连接机制，<strong class="text-white">只要关闭浏览器网页分页，该次对决数据将即刻彻底释放消失！</strong>（适合即席测试）</li>
+                </ul>
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-[#ff3c3c] select-none">▶</span> 
+                <span class="font-bold text-white">全机能调配功能：</span>
+                <p class="mt-1 ml-2 text-[9.5px] leading-relaxed text-[#a4bdcf]/90">
+                  🎮 <strong>对局申报</strong>：记录每一秒的 Win / Lost / Tie，自由备注对决原因，甚至上传实体图片证据。<br>
+                  📊 <strong>流向视觉解析</strong>：内置 2D 环形胜率透视图，与双曲线全记录历史趋势追踪。<br>
+                  🎵 <strong>背景音乐覆写</strong>：支援上传覆写背景 BGM 与各种操作提示音效！
+                </p>
+              </div>
+
+              <div class="border-t border-[#3b3f46]/50 pt-2 text-[8px] text-[#9ca3af] font-mono text-center uppercase tracking-widest select-none">
+                -- COGNITIVE ENGINE READY FOR COMBAT --
+              </div>
+            </div>`;
+    } else if (currentLang === 'ja') {
+      homeIntroWidget.innerHTML = `
+            <div class="flex items-center gap-2 border-b border-[#3b3f46] pb-2 mb-2 select-none">
+              <span class="text-xs text-neon-cyan">👾</span>
+              <h3 class="text-[10px] font-bold uppercase tracking-widest font-pixel font-mono text-white">SYS-INTRO: DUEL MEME HUB (ロックマンX4 決闘記録ターミナル)</h3>
+            </div>
+            
+            <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="text-white font-bold">ロックマンX4 決闘記録ターミナルシステムへようこそ！</span>
+                本システムは、16/32ビットのレトロなアーケード筐体の美学（CRTスキャンライン、カプコン風のクールな配色、リアルタイム音声シンセサイザー）と、高度なクラウド/ローカル認証管理を融合した決闘トラッカーです。
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="font-bold text-white">デュアル接続モードの選択：</span>
+                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
+                  <li><strong class="text-neon-cyan">クラウド認証 (Google / GitHub)</strong>：Supabaseクラウドにデータを安全に保存。対戦レコード、カスタムミームセリフ、カスタムSEなどが永続的に同期され、複数デバイスで利用可能です。</li>
+                  <li><strong class="text-[#ffd700]">クイックゲストモード (Transient Guest)</strong>：認証不要で即時に使用可能。<span class="text-[#ffd700] underline">SessionStorage</span>を利用しており、<strong class="text-white">ブラウザのタブを閉じると、すべての決闘記録は安全にかつ即時に消去されます！</strong>（ワンクリックテストに最適）</li>
+                </ul>
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-[#ff3c3c] select-none">▶</span> 
+                <span class="font-bold text-white">フル機能カスタマイズ：</span>
+                <p class="mt-1 ml-2 text-[9.5px] leading-relaxed text-[#a4bdcf]/90">
+                  🎮 <strong>対局エントリー</strong>：毎局の Win / Lost / Tie を記録し、自由なメモや証拠スクリーンショットを添付。<br>
+                  📊 <strong>流れの可視化</strong>：2D勝率ドーナツチャートと時系列トレンド遷移分析を搭載。<br>
+                  🎵 <strong>BGM・SEの上書き</strong>：カスタムBGMやタブ切り替え・選択音声をお好みの素材にいつでも上書き可能です！
+                </p>
+              </div>
+
+              <div class="border-t border-[#3b3f46]/50 pt-2 text-[8px] text-[#9ca3af] font-mono text-center uppercase tracking-widest select-none">
+                -- COGNITIVE ENGINE READY FOR COMBAT --
+              </div>
+            </div>`;
+    } else {
+      homeIntroWidget.innerHTML = `
+            <div class="flex items-center gap-2 border-b border-[#3b3f46] pb-2 mb-2 select-none">
+              <span class="text-xs text-neon-cyan">👾</span>
+              <h3 class="text-[10px] font-bold uppercase tracking-widest font-pixel font-mono text-white">SYS-INTRO: DUEL MEME HUB (ROCKMAN X4 DUEL TERMINAL)</h3>
+            </div>
+            
+            <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="text-white font-bold">Welcome to Rockman X4 Duel Combat Tracker Terminal!</span>
+                This retro-styled application merges the aesthetic of 16/32-bit retro arcade terminals (CRT scanline filter, Capcom-inspired layout, customizable chiptune synthesizer) with modern multi-identity secure database configurations.
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="font-bold text-white">Dual Verification Channel:</span>
+                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
+                  <li><strong class="text-neon-cyan">Cloud Sync (Google / GitHub OAuth)</strong>: Hosted dynamically via Supabase, saving your records, customized quote slates, and audio assets permanently across devices.</li>
+                  <li><strong class="text-[#ffd700]">Transient Guest Mode (Local-only)</strong>: Bypasses OAuth registration completely. Powered by <span class="text-[#ffd700] underline">SessionStorage</span>. <strong class="text-white">Once you close your browser tab, your battle transaction ledger is cleared immediately!</strong></li>
+                </ul>
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-[#ff3c3c] select-none">▶</span> 
+                <span class="font-bold text-white">Fully Loaded Capabilities:</span>
+                <p class="mt-1 ml-2 text-[9.5px] leading-relaxed text-[#a4bdcf]/90">
+                  🎮 <strong>Combat Log Submit</strong>: File Win/Loss/Tie states, write customized remarks, or upload raw screenshots as empirical proof.<br>
+                  📊 <strong>Data Visualizations</strong>: Responsive 2D win/loss ratios and double-curve historical flow trends.<br>
+                  🎵 <strong>BGM/SE Replacement</strong>: Override standard soundtrack with your own MP3 files and customizable system click soundscapes!
+                </p>
+              </div>
+
+              <div class="border-t border-[#3b3f46]/50 pt-2 text-[8px] text-[#9ca3af] font-mono text-center uppercase tracking-widest select-none">
+                -- COGNITIVE ENGINE READY FOR COMBAT --
+              </div>
+            </div>`;
+    }
+  }
+
+  // Auth Panel Header Title localization
+  const authPanelTitle = document.getElementById('auth-panel-title');
+  if (authPanelTitle) {
+    if (currentLang === 'zh-TW') {
+      authPanelTitle.innerText = 'IDC-01: 安全認證中心';
+    } else if (currentLang === 'zh-CN') {
+      authPanelTitle.innerText = 'IDC-01: 安全认证中心';
+    } else if (currentLang === 'ja') {
+      authPanelTitle.innerText = 'IDC-01: セキュア認証ハブ';
+    } else {
+      authPanelTitle.innerText = 'IDC-01: SECURE AUTHENTICATION HUB';
+    }
+  }
+
+  // Auth State logged out text label localization
+  const loggedOutHintArea = document.querySelector('#auth-state-logged-out > div:first-child');
+  if (loggedOutHintArea) {
+    if (currentLang === 'zh-TW') {
+      loggedOutHintArea.innerText = '請選擇安全認證管道或進入極速訪客模式：';
+    } else if (currentLang === 'zh-CN') {
+      loggedOutHintArea.innerText = '请选择安全认证渠道或进入极速访客模式：';
+    } else if (currentLang === 'ja') {
+      loggedOutHintArea.innerText = '安全な検証チャネルを選択するか、ゲストモードに入ります：';
+    } else {
+      loggedOutHintArea.innerText = 'CHOOSE A SECURE VERIFICATION CHANNEL OR ENTER TRANSIENT GUEST MODE:';
+    }
+  }
+
+  // Guest Bypass button text localization
+  const btnBypass = document.getElementById('auth-btn-bypass');
+  if (btnBypass) {
+    if (currentLang === 'zh-TW') {
+      btnBypass.innerText = '🚪 進入訪客模式 (儲存於 Session / 關閉分頁消失)';
+    } else if (currentLang === 'zh-CN') {
+      btnBypass.innerText = '🚪 进入访客模式 (储存于 Session / 关闭分页消失)';
+    } else if (currentLang === 'ja') {
+      btnBypass.innerText = '🚪 ゲストモードで入る (セッション保存 / タブを閉じると消去)';
+    } else {
+      btnBypass.innerText = '🚪 ENTER GUEST MODE (Stored in Session / Cleared when Tab Closes)';
+    }
+  }
+
+  // Top-Right Header Sign In button localization
+  const headerLoginBtnSpan = document.querySelector('#header-login-btn > span');
+  if (headerLoginBtnSpan) {
+    if (currentLang === 'zh-TW') {
+      headerLoginBtnSpan.innerText = '登入驗證';
+    } else if (currentLang === 'zh-CN') {
+      headerLoginBtnSpan.innerText = '登录验证';
+    } else if (currentLang === 'ja') {
+      headerLoginBtnSpan.innerText = 'ログイン';
+    } else {
+      headerLoginBtnSpan.innerText = 'SIGN IN';
+    }
+  }
+
+  // Top-Right Header Logout button localization
+  const headerLogoutBtn = document.getElementById('header-logout-btn');
+  if (headerLogoutBtn) {
+    if (currentLang === 'zh-TW') {
+      headerLogoutBtn.innerText = '登出';
+    } else if (currentLang === 'zh-CN') {
+      headerLogoutBtn.innerText = '登出';
+    } else if (currentLang === 'ja') {
+      headerLogoutBtn.innerText = 'ログアウト';
+    } else {
+      headerLogoutBtn.innerText = 'OUT';
+    }
+  }
+
   // Footer Navigation Bar
   const isChinese = currentLang === 'zh-TW' || currentLang === 'zh-CN';
+  const homeNavTxt = isChinese ? (currentLang === 'zh-TW' ? '主頁機台' : '主页机台') : (currentLang === 'ja' ? 'ホーム' : 'HOME');
   const recNavTxt = isChinese ? (currentLang === 'zh-TW' ? '決鬥登錄' : '决斗登录') : (currentLang === 'ja' ? '記録' : 'RECORD');
   const logNavTxt = isChinese ? (currentLang === 'zh-TW' ? '歷史動態' : '历史动态') : (currentLang === 'ja' ? '履歴' : 'LOGS');
   const statNavTxt = isChinese ? (currentLang === 'zh-TW' ? '勝率分析' : '胜率分析') : (currentLang === 'ja' ? '統計' : 'STATS');
   const setNavTxt = isChinese ? (currentLang === 'zh-TW' ? '更換資源' : '更换资源') : (currentLang === 'ja' ? '設定' : 'SETTINGS');
 
+  safeSetInnerText('nav-lbl-home', homeNavTxt);
   safeSetInnerText('nav-lbl-record', recNavTxt);
   safeSetInnerText('nav-lbl-timeline', logNavTxt);
   safeSetInnerText('nav-lbl-stats', statNavTxt);
@@ -646,7 +1129,7 @@ function initMainEventBindings() {
       submitBtn.disabled = true;
       submitBtn.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).submitting;
 
-      const response = await fetch('/api/records', {
+      const response = await secureFetch('/api/records', {
         method: 'POST',
         body: formData
       });
@@ -729,7 +1212,7 @@ function initMainEventBindings() {
     const quoteLoss = document.getElementById('set-quote-loss').value.trim();
 
     try {
-      const response = await fetch('/api/settings', {
+      const response = await secureFetch('/api/settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -768,7 +1251,7 @@ function initMainEventBindings() {
 
     const formData = new FormData(assetsForm);
     try {
-      const response = await fetch('/api/settings/assets', {
+      const response = await secureFetch('/api/settings/assets', {
         method: 'POST',
         body: formData
       });
@@ -987,7 +1470,7 @@ function renderTimelineLayout() {
       const id = btn.getAttribute('data-id');
       if (confirm(dictionary.confirmDelete)) {
         try {
-          const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
+          const res = await secureFetch(`/api/records/${id}`, { method: 'DELETE' });
           if (res.ok) {
             playSynthesizedLossSound();
             refreshRecords();

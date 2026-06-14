@@ -34,7 +34,7 @@
           </div>
           <div class="flex items-center gap-2">
             <!-- Language Toggle Dropdown moved to Header -->
-            <select id="select-lang" class="bg-[#111317] text-white border border-[#9ca3af] font-pixel text-[10px] p-1 px-1.5 focus:outline-none focus:border-[#ffffff] max-w-[85px] h-6 cursor-pointer">
+            <select id="select-lang" class="bg-[#111317] text-white border border-[#9ca3af] font-pixel text-[10px] p-1 px-1.5 focus:outline-none focus:border-[#ffffff] max-w-[85px] h-6 cursor-pointer font-sans">
               <option value="ja">日本語</option>
               <option value="zh-TW">繁體中文</option>
               <option value="zh-CN">简体中文</option>
@@ -44,6 +44,19 @@
             <button id="bgm-ctrl-btn" class="pixel-btn text-[10px] px-2 py-1 flex items-center gap-1 h-6">
               <span>🎵</span> <span id="bgm-status-text">OFF</span>
             </button>
+            
+            <!-- User Login / Avatar Widget -->
+            <div id="header-user-widget" class="flex items-center gap-1.5 font-sans">
+              <button id="header-login-btn" class="pixel-btn pixel-btn-green text-[9px] px-2 py-1 h-6 font-bold uppercase tracking-wider flex items-center gap-1">
+                🔑 <span>SIGN IN</span>
+              </button>
+              
+              <div id="header-user-profile" class="hidden flex items-center gap-1 border border-[#3b3f46] bg-[#1a1d24] p-0.5 px-1.5 rounded h-6 relative select-none">
+                <img id="header-user-avatar" src="" referrerPolicy="no-referrer" class="w-4 h-4 rounded-full border border-white bg-[#0e1013] object-cover" />
+                <span id="header-user-display" class="text-[9px] text-[#a4bdcf] font-mono font-bold max-w-[55px] truncate">Guest</span>
+                <button id="header-logout-btn" class="text-[8px] text-[#ff3c3c] hover:text-[#ff6666] font-mono border-l border-[#3b3f46] pl-1 font-bold cursor-pointer">OUT</button>
+              </div>
+            </div>
           </div>
         </div>
         <div class="flex justify-between text-[10px] font-mono text-[#9ca3af] mt-1 uppercase">
@@ -55,8 +68,121 @@
       <!-- Main Section / Screens -->
       <main class="flex-grow">
         
+        <!-- ==================== TAB 0: HOME & HUB ==================== -->
+        <section id="tab-home" class="tab-content block space-y-4">
+          
+          <!-- ==================== SUPABASE AUTH STATION ==================== -->
+          <div id="auth-station" class="border border-[#9ca3af] p-3 bg-[#111317]/95 rounded relative z-20">
+            <!-- Station Header with collapse button -->
+            <div class="flex justify-between items-center border-b border-[#3b3f46] pb-1.5 mb-2">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] text-neon-cyan select-none">🌐</span>
+                <span class="text-[9px] font-bold text-white uppercase tracking-widest font-pixel font-mono" id="auth-panel-title">IDC-01: SECURE AUTHENTICATION HUB</span>
+              </div>
+              <button id="auth-toggle-collapse-btn" class="pixel-btn text-[8px] px-1.5 py-0.5">MINIMIZE</button>
+            </div>
+
+            <div id="auth-panel-content-area" class="transition-all duration-300">
+              
+              <!-- STATE 1: MISSING CONFIG -->
+              <div id="auth-state-unconfigured" class="hidden text-[9px] text-[#ff3b3b] p-2 bg-[#ff3b3b]/10 border border-[#ff3b3b]/40 font-mono space-y-1 rounded mb-1">
+                <div class="font-bold uppercase tracking-wider">&gt;&gt; NOTIFICATION: SUPABASE UNCONFIGURED &lt;&lt;</div>
+                <div>Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable user cloud sign-in.</div>
+              </div>
+
+              <!-- STATE 2: NOT LOGGED IN / SIGN IN CARD -->
+              <div id="auth-state-logged-out" class="space-y-4 hidden">
+                <div class="text-[9.5px] text-[#a4bdcf] font-mono text-center leading-relaxed">
+                  CHOOSE A SECURE VERIFICATION CHANNEL OR ENTER TRANSIENT GUEST MODE:
+                </div>
+
+                <!-- OAuth Buttons -->
+                <div class="grid grid-cols-2 gap-2 font-sans">
+                  <button id="auth-btn-google" class="pixel-btn text-[9px] py-2 flex items-center justify-center gap-1.5 border-none bg-[#2a1111] text-[#ff6666] hover:bg-[#3d1a1a] font-bold">
+                    <span class="text-[10px]">🔴</span> GOOGLE OAUTH
+                  </button>
+                  <button id="auth-btn-github" class="pixel-btn text-[9px] py-2 flex items-center justify-center gap-1.5 border-none bg-[#1a1c23] text-[#cfd3dc] hover:bg-[#252832] font-bold">
+                    <span class="text-[10px]">🐈</span> GITHUB OAUTH
+                  </button>
+                </div>
+
+                <div class="border-t border-[#3b3f46]/50 pt-2.5">
+                  <button id="auth-btn-bypass" class="w-full pixel-btn text-[10px] py-2 font-bold text-[#ffd700] bg-[#1a1d24] border border-[#ffd700]/30 hover:border-[#ffd700] uppercase font-sans tracking-wide">
+                    🚪 ENTER GUEST MODE (儲存於 Session / 關閉分頁消失)
+                  </button>
+                </div>
+                
+                <div id="auth-status-msg" class="text-[8px] font-mono text-[#00f2ff] text-center truncate uppercase"></div>
+              </div>
+
+              <!-- STATE 3: LOGGED IN USER CONTEXT -->
+              <div id="auth-state-logged-in" class="hidden flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs bg-[#1a1d24]/80 p-2 border border-[#448dff]/40 rounded relative overflow-hidden font-sans">
+                <!-- Sleek left side player spec -->
+                <div class="space-y-0.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#00ff55] animate-pulse"></span>
+                    <span class="text-[8px] text-[#00ff55] font-bold uppercase tracking-wider">ONLINE CHANNELS SECURED</span>
+                  </div>
+                  <div class="font-mono text-[9px] text-white leading-none">
+                    PLAYER ID: <span id="auth-user-email" class="font-bold text-[#00f2ff]">guest@domain.com</span>
+                  </div>
+                  <div class="text-[8px] font-mono text-[#a4bdcf] leading-none select-all">
+                    UUID: <span id="auth-user-uuid" class="text-[8px]">xxxx-xxxx-xxxx-xxxx</span>
+                  </div>
+                </div>
+
+                <!-- Sign Out Button -->
+                <button id="auth-btn-signout" class="pixel-btn pixel-btn-red text-[8px] uppercase font-bold tracking-wider py-1 px-3 self-start md:self-center font-sans">
+                  🔴 LOGOUT SYSTEM (登出)
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- WEBPAGE INTRODUCTION SYSTEM -->
+          <div id="home-intro-widget" class="border-4 border-double border-[#9ca3af] p-4 bg-[#111317]/95 rounded shadow-lg text-white space-y-4">
+            <div class="flex items-center gap-2 border-b border-[#3b3f46] pb-2 mb-2 select-none">
+              <span class="text-xs text-neon-cyan">👾</span>
+              <h3 class="text-[10px] font-bold uppercase tracking-widest font-pixel font-mono text-white">SYS-INTRO: DUEL MEME HUB (洛克人戰役對決終端)</h3>
+            </div>
+            
+            <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="text-white font-bold">歡迎來到 洛克人 X4 戰役決鬥終端紀錄系統！</span>
+                這是一個融合 16/32 位元復古大型街機美學（CRT 螢幕掃描濾鏡、Capcom 經典冷白色調、動態 Chiptune 音效合成器）與全新雲端/本地多登入身分管理的決鬥追蹤裝置。
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
+                <span class="font-bold text-white">雙核模式選擇：</span>
+                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
+                  <li><strong class="text-neon-cyan">雲端認證（Google / GitHub / 信箱認證）</strong>：儲存在 Supabase 高速雲端中，您的對決戰績、自訂迷因語錄與上傳的獨創音效皆能永久同步跟隨帳號，換裝置不遺失。</li>
+                  <li><strong class="text-[#ffd700]">極速訪客模式（Transient Guest）</strong>：零門檻點選，完美排除 IDP 註冊繁雜步驟。我們利用 <span class="text-[#ffd700] underline">SessionStorage</span> 連接機制，<strong class="text-white">只要關閉瀏覽器網頁分頁，該次對決數據將即刻徹底釋放消失！</strong>（適合即席測試）</li>
+                </ul>
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold text-[#ff3c3c] select-none">▶</span> 
+                <span class="font-bold text-white">全機能調配功能：</span>
+                <p class="mt-1 ml-2 text-[9.5px] leading-relaxed text-[#a4bdcf]/90">
+                  🎮 <strong>對局申報</strong>：記錄每一秒的 Win / Lost / Tie，自由備註對決原因，甚至上傳實體圖片證據。<br>
+                  📊 <strong>流向視覺解析</strong>：內置 2D 環形勝率透視圖，與雙曲線全記錄歷史趨勢追蹤。<br>
+                  🎵 <strong>背景音樂覆寫</strong>：支援上傳覆寫背景 BGM 與各種操作提示音效！
+                </p>
+              </div>
+
+              <div class="border-t border-[#3b3f46]/50 pt-2 text-[8px] text-[#9ca3af] font-mono text-center uppercase tracking-widest select-none">
+                -- COGNITIVE ENGINE READY FOR COMBAT --
+              </div>
+            </div>
+          </div>
+
+        </section>
+
         <!-- ==================== TAB 1: RECORD ==================== -->
-        <section id="tab-record" class="tab-content block">
+        <section id="tab-record" class="tab-content hidden">
           
           <div class="text-center mb-3">
             <span id="rec-prompt" class="text-retro-arcade-chrome uppercase tracking-widest text-[9px] md:text-[10px]">
@@ -317,9 +443,15 @@
 
       <!-- ==================== BOTTOM TAB BAR NATIVE ==================== -->
       <footer class="fixed bottom-0 left-0 w-full bg-[#0a0b0d] border-t-4 border-[#9ca3af] z-50">
-        <nav class="max-w-lg md:max-w-xl mx-auto grid grid-cols-3 select-none pb-safe">
+        <nav class="max-w-lg md:max-w-xl mx-auto grid grid-cols-4 select-none pb-safe">
+          <!-- HOME TAB -->
+          <button id="nav-btn-home" class="stats-tab-nav active flex flex-col items-center justify-center py-2 text-[#9ca3af] cursor-pointer" data-tab="home">
+            <span class="text-base">🏠</span>
+            <span class="text-[8px] mt-1 font-bold font-pixel" id="nav-lbl-home">HOME</span>
+          </button>
+
           <!-- RECORD TAB -->
-          <button id="nav-btn-record" class="stats-tab-nav active flex flex-col items-center justify-center py-2 text-[#9ca3af] cursor-pointer" data-tab="record">
+          <button id="nav-btn-record" class="stats-tab-nav flex flex-col items-center justify-center py-2 text-[#9ca3af] cursor-pointer" data-tab="record">
             <span class="text-base">🎮</span>
             <span class="text-[8px] mt-1 font-bold font-pixel" id="nav-lbl-record">RECORD</span>
           </button>
