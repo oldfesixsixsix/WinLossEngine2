@@ -19,14 +19,14 @@ const TRANSLATIONS = {
     lblQuotes: "カスタムミーム語録 (パイプ | で区切る):",
     saveText: "テキスト設定を保存",
     lblAssets: "アセットファイルをアップロード:",
-    winImg: "「勝利」画像:",
-    drawImg: "「引き分け」画像:",
-    lossImg: "「敗北」画像:",
+    winImg: "「勝利」ミーム画像:",
+    drawImg: "「引き分け」ミーム画像:",
+    lossImg: "「敗北」ミーム画像:",
     bgmUrl: "カスタムBGM音源:",
     winSe: "勝利SE音声:",
     lossSe: "敗北SE音声:",
     saveAssets: "素材ファイルをアップロードする",
-    day: "日次",
+    day: "[ 日次 ]",
     week: "週次",
     month: "月次",
     win: "勝利数",
@@ -75,12 +75,11 @@ const TRANSLATIONS = {
     tabSe: "下部タブ切替SE音:",
     selectWinSe: "記録-勝利選択SE音:",
     selectLossSe: "記録-敗北選択SE音:",
-    submitSe: "登録・保存SE音:",
-    deleteSe: "記録削除SE音:"
+    submitSe: "登録・保存SE音:"
   },
   'zh-TW': {
-    headerStage: "ST-04: 戰場",
-    headerTitle: "輸贏",
+    headerStage: "ST-04: 梗圖戰場",
+    headerTitle: "輸贏紀錄系統",
     recPrompt: ">> 請選擇這次的決鬥結果 <<",
     recWinDesc: "勝利",
     recLossDesc: "敗北",
@@ -92,17 +91,17 @@ const TRANSLATIONS = {
     tab2Title: "決鬥歷史動態",
     tab4Title: "系統設定與自定義資源",
     lblLang: "語系設定:",
-    lblQuotes: "自定義語錄 (用直線 | 隔開):",
+    lblQuotes: "自定義迷因語錄 (用直線 | 隔開):",
     saveText: "儲存文字設定",
     lblAssets: "上傳/替換實體資源:",
-    winImg: "「贏」圖:",
-    drawImg: "「平局」圖:",
-    lossImg: "「輸」圖:",
+    winImg: "「贏」迷因梗圖:",
+    drawImg: "「平局」迷因梗圖:",
+    lossImg: "「輸」迷因梗圖:",
     bgmUrl: "自訂背景音樂:",
     winSe: "上傳獲勝音效:",
     lossSe: "上傳落敗音效:",
     saveAssets: "上傳並部署實體資源",
-    day: "當日",
+    day: "[ 當日 ]",
     week: "本週",
     month: "本月",
     win: "總贏次數",
@@ -111,9 +110,9 @@ const TRANSLATIONS = {
     winRatio: "勝率分佈",
     victories: "獲勝次數",
     defeats: "落敗次數",
-    statusWin: "還有誰？",
-    statusLoss: "站、站不起來了...",
-    statusEqual: "就先維持現狀吧",
+    statusWin: "不愧是你！絕好調",
+    statusLoss: "投降輸一半！任務失敗",
+    statusEqual: "沒輸沒贏！五五開",
     toastTitle: "偵測到 PWA: 要安裝嗎？",
     toastBody: "將輸贏紀錄器新增至您的主螢幕！",
     install: "安裝",
@@ -151,12 +150,11 @@ const TRANSLATIONS = {
     tabSe: "下方頁籤切換音效:",
     selectWinSe: "紀錄 WIN 選擇音效:",
     selectLossSe: "紀錄 LOSS 選擇音效:",
-    submitSe: "登錄提交儲存音效:",
-    deleteSe: "刪除歷史紀錄音效:"
+    submitSe: "登錄提交儲存音效:"
   },
   'zh-CN': {
-    headerStage: "ST-04: 战场",
-    headerTitle: "输赢",
+    headerStage: "ST-04: 梗图战场",
+    headerTitle: "输赢纪录系统",
     recPrompt: ">> 请选择这次的决斗结果 <<",
     recWinDesc: "胜利",
     recLossDesc: "败北",
@@ -171,14 +169,14 @@ const TRANSLATIONS = {
     lblQuotes: "自定义迷因语录 (用直线 | 隔开):",
     saveText: "保存文字设定",
     lblAssets: "上传/替换实体资源:",
-    winImg: "「赢」图:",
-    drawImg: "「平局」图:",
-    lossImg: "「输」图:",
+    winImg: "「赢」迷因梗图:",
+    drawImg: "「平局」迷因梗图:",
+    lossImg: "「输」迷因梗图:",
     bgmUrl: "自定背景音乐:",
     winSe: "上传获胜音效:",
     lossSe: "上传落败音效:",
     saveAssets: "上传并部署实体资源",
-    day: "当日",
+    day: "[ 当日 ]",
     week: "本周",
     month: "本月",
     win: "总赢次数",
@@ -187,9 +185,9 @@ const TRANSLATIONS = {
     winRatio: "胜率分布",
     victories: "获胜次数",
     defeats: "落败次数",
-    statusWin: "绝好调",
-    statusLoss: "站、站不起來了...",
-    statusEqual: "五开",
+    statusWin: "不愧是你！绝好调",
+    statusLoss: "投降输一半！任务失败",
+    statusEqual: "没输没赢！五开",
     toastTitle: "侦测到 PWA: 要安装吗？",
     toastBody: "将输赢纪录器新增至您的主屏幕！",
     install: "安装",
@@ -227,11 +225,10 @@ const TRANSLATIONS = {
     tabSe: "下方面签切换音效:",
     selectWinSe: "记录 WIN 选择音效:",
     selectLossSe: "记录 LOSS 选择音效:",
-    submitSe: "登录提交保存音效:",
-    deleteSe: "删除历史记录音效:"
+    submitSe: "登录提交保存音效:"
   },
   en: {
-    headerStage: "ST-04: ARENA",
+    headerStage: "ST-04: MEME ARENA",
     headerTitle: "WIN/LOSS Tracker",
     recPrompt: ">> SELECT YOUR DUEL STATE <<",
     recWinDesc: "VICTORY",
@@ -254,7 +251,7 @@ const TRANSLATIONS = {
     winSe: "Upload Win Sound (SE):",
     lossSe: "Upload Loss Sound (SE):",
     saveAssets: "UPLOAD AND DEPLOY ASSETS",
-    day: "DAILY",
+    day: "[ DAILY ]",
     week: "WEEKLY",
     month: "MONTHLY",
     win: "TOTAL WINS",
@@ -264,8 +261,8 @@ const TRANSLATIONS = {
     victories: "VICTORIES",
     defeats: "DEFEATS",
     statusWin: "Outstanding! Unbeatable!",
-    statusLoss: "Continue? 9...8...7...",
-    statusEqual: "EParadox Detected.",
+    statusLoss: "Mission Failed! Try Again!",
+    statusEqual: "Even Duel! Tie Play!",
     toastTitle: "PWA DETECTED: INSTALL?",
     toastBody: "Add Win/Loss Tracker to your home screen!",
     install: "INSTALL",
@@ -303,8 +300,7 @@ const TRANSLATIONS = {
     tabSe: "Bottom Tab Select SE:",
     selectWinSe: "Record WIN Select SE:",
     selectLossSe: "Record LOSS Select SE:",
-    submitSe: "Submit & Save SE:",
-    deleteSe: "Delete Record SE:"
+    submitSe: "Submit & Save SE:"
   }
 };
 
@@ -337,7 +333,7 @@ let selectedOutcome = 'win'; // 'win', 'loss', or 'draw'
 let synthesizedIntervalId = null;
 let currentSynthAudioCtx = null;
 let customBgmInstance = null; // HTMLAudioElement for custom uploaded BGM
-let isBgmPlaying = true;
+let isBgmPlaying = false;
 
 // Resolve quotes properly depending on current selected language
 function getLocalizedQuote(rawQuoteStr, fallbackDefault) {
@@ -365,11 +361,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Set default active tab
   switchActiveTab('record');
-
-  // Start BGM if enabled (handles auto-play policy)
-  if (isBgmPlaying) {
-    startLoopingMusic();
-  }
 });
 
 // Load backend configs from SQLite
@@ -432,8 +423,8 @@ async function loadSettingsFromServer() {
       safeSetInputValue('set-quote-loss', backendSettings.loss_meme_quote || '');
 
       // Update default display pictures if they changed
-      safeSetImgSrc('display-win-image', backendSettings.win_meme_url || '/defaults/images/win.jpg');
-      safeSetImgSrc('display-loss-image', backendSettings.loss_meme_url || '/defaults/images/loss.jpg');
+      safeSetImgSrc('display-win-image', backendSettings.win_meme_url || '/defaults/images/rockman_win.png');
+      safeSetImgSrc('display-loss-image', backendSettings.loss_meme_url || '/defaults/images/zero_lose.png');
 
       applyLocalizationBundle();
     }
@@ -520,7 +511,6 @@ function applyLocalizationBundle() {
   safeSetInnerText('set-lbl-select-win-se', dictionary.selectWinSe);
   safeSetInnerText('set-lbl-select-loss-se', dictionary.selectLossSe);
   safeSetInnerText('set-lbl-submit-se', dictionary.submitSe);
-  safeSetInnerText('set-lbl-delete-se', dictionary.deleteSe);
 
   // Footer Navigation Bar
   const isChinese = currentLang === 'zh-TW' || currentLang === 'zh-CN';
@@ -543,17 +533,7 @@ function applyLocalizationBundle() {
   // Lightbox Media Attachment Label
   safeSetInnerText('lightbox-meta', dictionary.lightboxMeta);
 
-  // BGM Active Status Text Indicator & Styling
-  const bgmBtn = document.getElementById('bgm-ctrl-btn');
-  if (bgmBtn) {
-    if (isBgmPlaying) {
-      bgmBtn.style.borderColor = '#00ff66';
-      bgmBtn.style.color = '#00ff66';
-    } else {
-      bgmBtn.style.borderColor = '#00f2ff';
-      bgmBtn.style.color = '#00f2ff';
-    }
-  }
+  // BGM Active Status Text Indicator
   safeSetInnerText('bgm-status-text', isBgmPlaying ? dictionary.on : dictionary.off);
 
   // Ensure dynamic statistics metrics & quotes match the dictionary instantly
@@ -673,7 +653,7 @@ function initMainEventBindings() {
 
       if (response.ok) {
         // Play submit success chime and epic result sound
-        playSubmitSound();
+        playSubmitSaveSound();
         
         if (selectedOutcome === 'win') {
           playResultTheme(true);
@@ -769,7 +749,7 @@ function initMainEventBindings() {
         backendSettings.draw_meme_quote = quoteDraw;
         backendSettings.loss_meme_quote = quoteLoss;
         applyLocalizationBundle();
-        playSubmitSound();
+        playSubmitSaveSound();
         alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertTextSavedSuccess);
       }
     } catch (err) {
@@ -796,7 +776,7 @@ function initMainEventBindings() {
       if (response.ok) {
         const result = await safeParseJson(response);
         if (result) {
-          playSubmitSound();
+          playSubmitSaveSound();
           alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsSuccess);
           await loadSettingsFromServer();
           // Clear file selections
@@ -1009,7 +989,7 @@ function renderTimelineLayout() {
         try {
           const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
           if (res.ok) {
-            playDeleteSound();
+            playSynthesizedLossSound();
             refreshRecords();
           } else {
             alert(dictionary.alertDeleteFailure);
@@ -1066,7 +1046,7 @@ function updateStatisticsMetrics(period = 'day') {
 
   if (wins > losses) {
     // Win Status
-    if (memeImg) memeImg.src = backendSettings.win_meme_url || '/defaults/images/win.jpg';
+    if (memeImg) memeImg.src = backendSettings.win_meme_url || '/defaults/images/rockman_win.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusWin;
       badgeSpan.style.color = '#00f2ff';
@@ -1078,7 +1058,7 @@ function updateStatisticsMetrics(period = 'day') {
     if (quoteDiv) quoteDiv.innerText = `"${activeQuote}"`;
   } else if (wins < losses) {
     // Loss Status
-    if (memeImg) memeImg.src = backendSettings.loss_meme_url || '/defaults/images/loss.jpg';
+    if (memeImg) memeImg.src = backendSettings.loss_meme_url || '/defaults/images/zero_lose.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusLoss;
       badgeSpan.style.color = '#ff0055';
@@ -1090,7 +1070,7 @@ function updateStatisticsMetrics(period = 'day') {
     if (quoteDiv) quoteDiv.innerText = `"${activeQuote}"`;
   } else {
     // Equal Draw Status (including 0 records)
-    if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/defaults/images/tie.jpg';
+    if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/defaults/images/tie_meme.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusEqual;
       badgeSpan.style.color = '#ffffff';
@@ -1317,21 +1297,14 @@ function playRecordSelectLossSound() {
   audio.play().catch(() => playSynthesizedSelectLossSound());
 }
 
-function playSubmitSound() {
+function playSubmitSaveSound() {
   const chosenPath = (backendSettings && backendSettings.submit_sound_path) || '/defaults/sounds/submit.mp3';
   const audio = new Audio(chosenPath);
   audio.volume = 0.55;
-  audio.play().catch(() => playSynthesizedSubmitSound());
+  audio.play().catch(() => playSynthesizedSubmitSaveSound());
 }
 
-function playDeleteSound() {
-  const chosenPath = (backendSettings && backendSettings.delete_sound_path) || '/defaults/sounds/delete.mp3';
-  const audio = new Audio(chosenPath);
-  audio.volume = 0.55;
-  audio.play().catch(() => playSynthesizedLossSound());
-}
-
-function playSynthesizedSubmitSound() {
+function playSynthesizedSubmitSaveSound() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) return;
   const ctx = new AudioContextClass();
@@ -1394,16 +1367,8 @@ function startLoopingMusic() {
   });
 
   customBgmInstance.play().catch(err => {
-    console.warn('BGM auto-play blocked by browser. Waiting for interaction.', err);
-    // Silent fallback, wait for any common interaction to resume
-    const unlockEvents = ['click', 'touchstart', 'mousedown', 'keydown'];
-    const startOnInteraction = () => {
-      if (isBgmPlaying && customBgmInstance) {
-        customBgmInstance.play().catch(() => triggerFallback());
-      }
-      unlockEvents.forEach(evt => document.removeEventListener(evt, startOnInteraction));
-    };
-    unlockEvents.forEach(evt => document.addEventListener(evt, startOnInteraction));
+    console.warn('BGM path playback failed (might be 404 or gesture constraint). Fallbacking to Synth:', err);
+    triggerFallback();
   });
 }
 

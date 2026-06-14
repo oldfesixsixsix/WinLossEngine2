@@ -67,7 +67,6 @@
           <!-- Hero Selection Layout (X vs Zero slanted complementary trapezoids) -->
           <div class="relative w-full h-[190px] md:h-[240px] mb-6 select-none">
             
-
             <!-- Left Hero Box: X (WIN) - Top wide, bottom narrow -->
             <div id="btn-outcome-win" class="x4-trapezoid-wrapper-win active cursor-pointer" data-outcome="win">
               <div class="x4-trapezoid-inner-win overflow-hidden">
@@ -111,10 +110,8 @@
             <div class="flex flex-col gap-3">
               <!-- Reason textarea -->
               <div>
-
                 <label class="block text-[#a3e8ff] font-bold mb-1.5 uppercase text-[9px] font-pixel transition-colors duration-300" id="lbl-reason">Reason / Logs (原因/備註):</label>
                 <input type="text" id="input-reason" class="w-full capcom-inner-input text-xs" placeholder="e.g. 程式碼一發就過 / 打小鋼珠胡了" maxlength="200" autocomplete="off" />
-
               </div>
  
               <!-- Upload Voucher Image -->
@@ -192,10 +189,8 @@
  
             <!-- Dynamic portrait container -->
             <div class="w-full flex flex-col items-center">
-
               <div class="w-2/3 md:w-1/2 aspect-square border-2 border-[#9ca3af] bg-[#111317] overflow-hidden relative p-1 mb-2">
                 <img id="stats-meme-display" src="/uploads/tie_meme.png" class="w-full h-full object-cover" alt="Dynamic Meme" referrerPolicy="no-referrer">
-
                 <!-- Glowing futuristic neon visual brackets -->
                 <div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#ffffff]"></div>
                 <div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#ffffff]"></div>
@@ -304,15 +299,9 @@
                 </div>
 
                 <!-- Submit SE -->
-                <div class="flex flex-col border-b border-[#005a70] pb-2">
+                <div class="flex flex-col pb-1">
                   <span class="text-white font-bold mb-1" id="set-lbl-submit-se">Choose SE (Submit Track SE):</span>
                   <input type="file" name="submit_sound_file" accept="audio/*" class="text-[9px]" />
-                </div>
-
-                <!-- Delete SE -->
-                <div class="flex flex-col pb-1">
-                  <span class="text-white font-bold mb-1" id="set-lbl-delete-se">Choose SE (Delete Record SE):</span>
-                  <input type="file" name="delete_sound_file" accept="audio/*" class="text-[9px]" />
                 </div>
 
                 <button type="submit" id="btn-submit-assets" class="pixel-btn w-full mt-2 py-1.5 text-[9px]">

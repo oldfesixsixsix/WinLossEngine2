@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
+import { createServer as createViteServer } from 'vite';
 
 const app = express();
 const PORT = 3000;
@@ -15,9 +16,11 @@ try {
   myDirname = __dirname;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'public', 'defaults');
-const ASSETS_DIR = path.join(DATA_DIR, 'images');
-const SOUNDS_DIR = path.join(DATA_DIR, 'sounds');
+const DATA_DIR = path.join(process.cwd(), 'data');
+const ASSETS_DIR = path.join(DATA_DIR, 'assets');
+const PUBLIC_DEFAULTS_DIR = path.join(process.cwd(), 'public', 'defaults');
+const PUBLIC_IMAGES_DIR = path.join(PUBLIC_DEFAULTS_DIR, 'images');
+const PUBLIC_SOUNDS_DIR = path.join(PUBLIC_DEFAULTS_DIR, 'sounds');
 
 // Ensure database and assets directories exist
 if (!fs.existsSync(DATA_DIR)) {
@@ -26,27 +29,42 @@ if (!fs.existsSync(DATA_DIR)) {
 if (!fs.existsSync(ASSETS_DIR)) {
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
 }
-if (!fs.existsSync(SOUNDS_DIR)) {
-  fs.mkdirSync(SOUNDS_DIR, { recursive: true });
+if (!fs.existsSync(PUBLIC_IMAGES_DIR)) {
+  fs.mkdirSync(PUBLIC_IMAGES_DIR, { recursive: true });
+}
+if (!fs.existsSync(PUBLIC_SOUNDS_DIR)) {
+  fs.mkdirSync(PUBLIC_SOUNDS_DIR, { recursive: true });
 }
 
-// Copy default pre-generated pixel art images to defaults folder
+// Copy default pre-generated pixel art images to persistent data/assets folder and public defaults folder
 const defaultMapping = [
-  { src: 'rockman_win_1781102046763.png', dest: 'win.jpg' },
-  { src: 'zero_lose_1781102061526.png', dest: 'loss.jpg' },
-  { src: 'tie_meme_1781102077141.png', dest: 'tie.jpg' }
+  { src: 'rockman_win_1781102046763.png', dest: 'rockman_win.png', uploadDest: 'rockman_win.png' },
+  { src: 'zero_lose_1781102061526.png', dest: 'zero_lose.png', uploadDest: 'zero_lose.png' },
+  { src: 'tie_meme_1781102077141.png', dest: 'tie_meme.png', uploadDest: 'tie_meme.png' }
 ];
 
 for (const map of defaultMapping) {
   const sourcePath = path.join(process.cwd(), 'src', 'assets', 'images', map.src);
-  const targetPath = path.join(ASSETS_DIR, map.dest);
   if (fs.existsSync(sourcePath)) {
-    if (!fs.existsSync(targetPath)) {
+    // Copy to persistent data assets
+    const targetUploadPath = path.join(ASSETS_DIR, map.uploadDest);
+    if (!fs.existsSync(targetUploadPath)) {
       try {
-        fs.copyFileSync(sourcePath, targetPath);
-        console.log(`Copied default image ${map.src} to ${targetPath}`);
+        fs.copyFileSync(sourcePath, targetUploadPath);
+        console.log(`Copied default image ${map.src} to persistent: ${targetUploadPath}`);
       } catch (err) {
-        console.error(`Failed to copy default image ${map.src}`, err);
+        console.error(`Failed to copy to persistent: ${map.src}`, err);
+      }
+    }
+
+    // Copy to public defaults images
+    const targetPublicPath = path.join(PUBLIC_IMAGES_DIR, map.dest);
+    if (!fs.existsSync(targetPublicPath)) {
+      try {
+        fs.copyFileSync(sourcePath, targetPublicPath);
+        console.log(`Copied default image ${map.src} to public defaults: ${targetPublicPath}`);
+      } catch (err) {
+        console.error(`Failed to copy to public defaults: ${map.src}`, err);
       }
     }
   }
@@ -56,6 +74,7 @@ for (const map of defaultMapping) {
 class JsonDatabase {
   private recordsFile = path.join(DATA_DIR, 'records.json');
   private settingsFile = path.join(DATA_DIR, 'settings.json');
+  private userSettingsFile = path.join(DATA_DIR, 'user_settings.json');
 
   constructor() {
     this.init();
@@ -66,44 +85,27 @@ class JsonDatabase {
     if (!fs.existsSync(this.recordsFile)) {
       fs.writeFileSync(this.recordsFile, JSON.stringify([], null, 2), 'utf-8');
     }
-    
-    const defaultSettings = [
-      { key: 'win_meme_url', value: '/defaults/images/win.jpg' },
-      { key: 'win_meme_quote', value: '麻了！完全掌握|Dominance established.|さすがですね！' },
-      { key: 'loss_meme_url', value: '/defaults/images/loss.jpg' },
-      { key: 'loss_meme_quote', value: '大意了，沒有閃|You activated their trap card...|私の...完全なる敗北だ...' },
-      { key: 'draw_meme_url', value: '/defaults/images/tie.jpg' },
-      { key: 'draw_meme_quote', value: '下次一定|Break even, barely.|奇跡 勝負つかず...' },
-      { key: 'lang', value: 'ja' },
-      { key: 'bgm_path', value: '/defaults/sounds/bgm.mp3' },
-      { key: 'win_sound_path', value: '/defaults/sounds/tab.mp3' },
-      { key: 'loss_sound_path', value: '/defaults/sounds/tab.mp3' },
-      { key: 'tab_sound_path', value: '/defaults/sounds/tab.mp3' },
-      { key: 'submit_sound_path', value: '/defaults/sounds/submit.mp3' },
-      { key: 'delete_sound_path', value: '/defaults/sounds/delete.mp3' },
-      { key: 'select_win_sound_path', value: '/defaults/sounds/winloss.mp3' },
-      { key: 'select_loss_sound_path', value: '/defaults/sounds/winloss.mp3' }
-    ];
-
-    let currentSettings: Record<string, string> = {};
-    if (fs.existsSync(this.settingsFile)) {
-      try {
-        currentSettings = JSON.parse(fs.readFileSync(this.settingsFile, 'utf-8'));
-      } catch (e) {
-        currentSettings = {};
-      }
+    if (!fs.existsSync(this.userSettingsFile)) {
+      fs.writeFileSync(this.userSettingsFile, JSON.stringify({}, null, 2), 'utf-8');
     }
-
-    let modified = false;
-    defaultSettings.forEach(s => {
-      if (!(s.key in currentSettings)) {
-        currentSettings[s.key] = s.value;
-        modified = true;
-      }
-    });
-
-    if (modified || !fs.existsSync(this.settingsFile)) {
-      fs.writeFileSync(this.settingsFile, JSON.stringify(currentSettings, null, 2), 'utf-8');
+    if (!fs.existsSync(this.settingsFile)) {
+      const defaultSettings = [
+        { key: 'win_meme_url', value: '/uploads/rockman_win.png' },
+        { key: 'win_meme_quote', value: '不愧是你！|Excellent work!|さすがですね！' },
+        { key: 'loss_meme_url', value: '/uploads/zero_lose.png' },
+        { key: 'loss_meme_quote', value: '投降輸一半|Mission Failed...|何者なんだ、これ...' },
+        { key: 'draw_meme_url', value: '/uploads/tie_meme.png' },
+        { key: 'draw_meme_quote', value: '沒輸沒贏|Double KO!|勝負つかず...' },
+        { key: 'lang', value: 'ja' },
+        { key: 'bgm_path', value: '' },
+        { key: 'win_sound_path', value: '' },
+        { key: 'loss_sound_path', value: '' }
+      ];
+      const settingsObj: Record<string, string> = {};
+      defaultSettings.forEach(s => {
+        settingsObj[s.key] = s.value;
+      });
+      fs.writeFileSync(this.settingsFile, JSON.stringify(settingsObj, null, 2), 'utf-8');
     }
   }
 
@@ -165,29 +167,51 @@ class JsonDatabase {
     }
   }
 
-  getRecords(): any[] {
+  private getRecordsAll(): any[] {
     try {
+      if (!fs.existsSync(this.recordsFile)) {
+        return [];
+      }
       const data = fs.readFileSync(this.recordsFile, 'utf-8');
-      const records = JSON.parse(data);
-      return records.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      return JSON.parse(data);
     } catch (e) {
       return [];
     }
   }
 
-  getRecordById(id: number): any {
-    const records = this.getRecords();
-    return records.find(r => r.id === id) || null;
+  getRecords(userId?: string): any[] {
+    try {
+      const records = this.getRecordsAll();
+      const filtered = records.filter((r: any) => {
+        if (userId) {
+          return r.user_id === userId;
+        }
+        return !r.user_id;
+      });
+      return filtered.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } catch (e) {
+      return [];
+    }
   }
 
-  addRecord(type: string, reason: string, image_path: string | null): any {
-    const records = this.getRecords();
+  getRecordById(id: number, userId?: string): any {
+    const records = this.getRecordsAll();
+    const record = records.find(r => r.id === id);
+    if (!record) return null;
+    if (userId && record.user_id !== userId) return null;
+    if (!userId && record.user_id) return null;
+    return record;
+  }
+
+  addRecord(type: string, reason: string, image_path: string | null, userId?: string): any {
+    const records = this.getRecordsAll();
     const nextId = records.length > 0 ? Math.max(...records.map((r: any) => r.id)) + 1 : 1;
     const newRecord = {
       id: nextId,
       type,
       reason: reason || '',
       image_path,
+      user_id: userId || null,
       created_at: new Date().toISOString()
     };
     records.push(newRecord);
@@ -195,9 +219,9 @@ class JsonDatabase {
     return newRecord;
   }
 
-  deleteRecord(id: number): boolean {
-    const records = this.getRecords();
-    const index = records.findIndex((r: any) => r.id === id);
+  deleteRecord(id: number, userId?: string): boolean {
+    const records = this.getRecordsAll();
+    const index = records.findIndex(r => r.id === id && (userId ? r.user_id === userId : !r.user_id));
     if (index !== -1) {
       records.splice(index, 1);
       fs.writeFileSync(this.recordsFile, JSON.stringify(records, null, 2), 'utf-8');
@@ -206,23 +230,62 @@ class JsonDatabase {
     return false;
   }
 
-  getSettings(): Record<string, string> {
+  getSettings(userId?: string): Record<string, string> {
+    let globalSettings: Record<string, string> = {};
     try {
-      const data = fs.readFileSync(this.settingsFile, 'utf-8');
-      return JSON.parse(data);
-    } catch (e) {
-      return {};
+      if (fs.existsSync(this.settingsFile)) {
+        const data = fs.readFileSync(this.settingsFile, 'utf-8');
+        globalSettings = JSON.parse(data);
+      }
+    } catch (e) {}
+
+    if (!userId) {
+      return globalSettings;
     }
+
+    try {
+      if (fs.existsSync(this.userSettingsFile)) {
+        const userSettingsData = fs.readFileSync(this.userSettingsFile, 'utf-8');
+        const userSettingsMap = JSON.parse(userSettingsData);
+        if (userSettingsMap[userId]) {
+          return { ...globalSettings, ...userSettingsMap[userId] };
+        }
+      }
+    } catch (e) {}
+
+    return globalSettings;
   }
 
-  updateSettings(updates: Record<string, string>) {
-    const settings = this.getSettings();
-    for (const [key, value] of Object.entries(updates)) {
-      if (typeof value === 'string') {
-        settings[key] = value;
+  updateSettings(updates: Record<string, string>, userId?: string) {
+    if (!userId) {
+      const settings = this.getSettings();
+      for (const [key, value] of Object.entries(updates)) {
+        if (typeof value === 'string') {
+          settings[key] = value;
+        }
       }
+      fs.writeFileSync(this.settingsFile, JSON.stringify(settings, null, 2), 'utf-8');
+      return;
     }
-    fs.writeFileSync(this.settingsFile, JSON.stringify(settings, null, 2), 'utf-8');
+
+    try {
+      let userSettingsMap: Record<string, any> = {};
+      if (fs.existsSync(this.userSettingsFile)) {
+        const userSettingsData = fs.readFileSync(this.userSettingsFile, 'utf-8');
+        userSettingsMap = JSON.parse(userSettingsData);
+      }
+      if (!userSettingsMap[userId]) {
+        userSettingsMap[userId] = {};
+      }
+      for (const [key, value] of Object.entries(updates)) {
+        if (typeof value === 'string') {
+          userSettingsMap[userId][key] = value;
+        }
+      }
+      fs.writeFileSync(this.userSettingsFile, JSON.stringify(userSettingsMap, null, 2), 'utf-8');
+    } catch (e) {
+      console.error('Failed to update user-specific settings', e);
+    }
   }
 }
 
@@ -234,8 +297,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve custom user-uploaded assets from the data folder
 app.use('/uploads', express.static(ASSETS_DIR));
-// Serve persistent default assets from the data folder (avoids stale files in dist/ during production)
-app.use('/defaults', express.static(DATA_DIR));
 
 // Configure Multer storage
 const storage = multer.diskStorage({
@@ -258,17 +319,27 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Helper to extract user_id from headers or query parameters for versatile OIDC / multi-tenant execution
+const getUserId = (req: express.Request): string | undefined => {
+  const val = req.headers['x-user-id'] || req.query.user_id;
+  if (typeof val === 'string' && val.trim() !== '') {
+    return val.trim();
+  }
+  return undefined;
+};
+
 // GET all records
 app.get('/api/records', (req, res) => {
   try {
-    const rows = db.getRecords();
+    const userId = getUserId(req);
+    const rows = db.getRecords(userId);
     res.json(rows);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST score record (incorporating upload)
+// POST score record (incorporating upload & user context)
 app.post('/api/records', upload.single('image'), (req, res) => {
   const { type, reason } = req.body;
   const image_path = req.file ? `/uploads/${req.file.filename}` : null;
@@ -278,7 +349,8 @@ app.post('/api/records', upload.single('image'), (req, res) => {
   }
 
   try {
-    const newRecord = db.addRecord(type, reason || '', image_path);
+    const userId = getUserId(req);
+    const newRecord = db.addRecord(type, reason || '', image_path, userId);
     res.json(newRecord);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -288,23 +360,24 @@ app.post('/api/records', upload.single('image'), (req, res) => {
 // DELETE a score record
 app.delete('/api/records/:id', (req, res) => {
   const idNum = parseInt(req.params.id, 10);
+  const userId = getUserId(req);
   
   try {
-    const record = db.getRecordById(idNum);
+    const record = db.getRecordById(idNum, userId);
     if (record && record.image_path) {
       const filename = path.basename(record.image_path);
       const filePath = path.join(ASSETS_DIR, filename);
       // Only delete if it's not our default pre-installed assets
-      if (fs.existsSync(filePath) && !['win.jpg', 'loss.jpg', 'tie.jpg'].includes(filename)) {
+      if (fs.existsSync(filePath) && !['rockman_win.png', 'zero_lose.png', 'tie_meme.png'].includes(filename)) {
         fs.unlink(filePath, (unlinkErr) => {
           if (unlinkErr) console.warn('Could not delete file:', filePath);
         });
       }
     }
     
-    const deleted = db.deleteRecord(idNum);
+    const deleted = db.deleteRecord(idNum, userId);
     if (!deleted) {
-      return res.status(404).json({ error: 'Record not found' });
+      return res.status(404).json({ error: 'Record not found or unauthorized' });
     }
     res.json({ success: true, message: 'Record deleted.' });
   } catch (err: any) {
@@ -315,7 +388,8 @@ app.delete('/api/records/:id', (req, res) => {
 // GET settings
 app.get('/api/settings', (req, res) => {
   try {
-    const settings = db.getSettings();
+    const userId = getUserId(req);
+    const settings = db.getSettings(userId);
     res.json(settings);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -325,7 +399,8 @@ app.get('/api/settings', (req, res) => {
 // UPDATE settings (text fields)
 app.post('/api/settings', (req, res) => {
   try {
-    db.updateSettings(req.body);
+    const userId = getUserId(req);
+    db.updateSettings(req.body, userId);
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -343,8 +418,7 @@ app.post('/api/settings/assets', upload.fields([
   { name: 'tab_sound_file', maxCount: 1 },
   { name: 'select_win_sound_file', maxCount: 1 },
   { name: 'select_loss_sound_file', maxCount: 1 },
-  { name: 'submit_sound_file', maxCount: 1 },
-  { name: 'delete_sound_file', maxCount: 1 }
+  { name: 'submit_sound_file', maxCount: 1 }
 ]), (req, res) => {
   const filesObj = req.files as Record<string, Express.Multer.File[]>;
   if (!filesObj) {
@@ -383,12 +457,10 @@ app.post('/api/settings/assets', upload.fields([
   if (filesObj['submit_sound_file']) {
     updates['submit_sound_path'] = `/uploads/${filesObj['submit_sound_file'][0].filename}`;
   }
-  if (filesObj['delete_sound_file']) {
-    updates['delete_sound_path'] = `/uploads/${filesObj['delete_sound_file'][0].filename}`;
-  }
 
   try {
-    db.updateSettings(updates);
+    const userId = getUserId(req);
+    db.updateSettings(updates, userId);
     res.json({ success: true, updates });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -398,7 +470,6 @@ app.post('/api/settings/assets', upload.fields([
 // Configure Vite integration for Hot Reload & Bundling
 async function start() {
   if (process.env.NODE_ENV !== 'production') {
-    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'custom',
