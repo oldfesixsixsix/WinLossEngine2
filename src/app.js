@@ -1,5 +1,5 @@
 // Rockman X4 Duel Win/Loss Tracker - CLIENT CONTROLLER
-import { supabase, isSupabaseConfigured } from './supabase.js';
+import { supabase, isSupabaseConfigured, initSupabaseDynamic } from './supabase.js';
 
 // Exception-safe, high-precision secureFetch wrapper to inject Supabase Auth header automatically
 async function secureFetch(url, options = {}) {
@@ -379,6 +379,7 @@ function getLocalizedQuote(rawQuoteStr, fallbackDefault) {
 
 // 1. Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
+  await initSupabaseDynamic();
   setupSupabaseAuth();
   await loadSettingsFromServer();
   await refreshRecords();
@@ -696,8 +697,8 @@ async function loadSettingsFromServer() {
       safeSetInputValue('set-quote-loss', backendSettings.loss_meme_quote || '');
 
       // Update default display pictures if they changed
-      safeSetImgSrc('display-win-image', backendSettings.win_meme_url || '/defaults/images/rockman_win.png');
-      safeSetImgSrc('display-loss-image', backendSettings.loss_meme_url || '/defaults/images/zero_lose.png');
+      safeSetImgSrc('display-win-image', backendSettings.win_meme_url || '/defaults/images/win.jpg');
+      safeSetImgSrc('display-loss-image', backendSettings.loss_meme_url || '/defaults/images/loss.jpg');
 
       applyLocalizationBundle();
     }
@@ -1579,7 +1580,7 @@ function updateStatisticsMetrics(period = 'day') {
     if (quoteDiv) quoteDiv.innerText = `"${activeQuote}"`;
   } else {
     // Equal Draw Status (including 0 records)
-    if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/defaults/images/tie_meme.png';
+    if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/defaults/images/tie.jpg';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusEqual;
       badgeSpan.style.color = '#ffffff';
