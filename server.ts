@@ -64,7 +64,78 @@ for (const map of defaultMapping) {
   }
 }
 
-// 2. Automatically copy ALL files from default directories to persistent volume assets (/uploads/*) if missing
+// 2. Scan and copy external runtime defaults if mounted (e.g., via docker-compose - ./defaults:/app/defaults)
+function copyRuntimeVolumeDefaults() {
+  const RUNTIME_DEFAULTS_DIR = '/app/defaults';
+  if (!fs.existsSync(RUNTIME_DEFAULTS_DIR)) return;
+
+  console.log(`Detected runtime default overrides mounted at: ${RUNTIME_DEFAULTS_DIR}`);
+
+  // Helper to copy files to target dir with logging
+  const copyFileToDest = (src: string, destDir: string, filename: string) => {
+    try {
+      if (!fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+      }
+      const destPath = path.join(destDir, filename);
+      fs.copyFileSync(src, destPath);
+      console.log(`Overrode default asset with custom volume file: ${filename} -> ${destPath}`);
+    } catch (err) {
+      console.error(`Failed to copy runtime custom default ${filename}:`, err);
+    }
+  };
+
+  // 1. Process files in standard subdirectories if they exist
+  const runtimeImagesDir = path.join(RUNTIME_DEFAULTS_DIR, 'images');
+  if (fs.existsSync(runtimeImagesDir)) {
+    try {
+      const files = fs.readdirSync(runtimeImagesDir);
+      files.forEach(file => {
+        const src = path.join(runtimeImagesDir, file);
+        if (fs.statSync(src).isFile()) {
+          copyFileToDest(src, PUBLIC_IMAGES_DIR, file);
+        }
+      });
+    } catch (e) {
+      console.error('Error reading runtime defaults images/', e);
+    }
+  }
+
+  const runtimeSoundsDir = path.join(RUNTIME_DEFAULTS_DIR, 'sounds');
+  if (fs.existsSync(runtimeSoundsDir)) {
+    try {
+      const files = fs.readdirSync(runtimeSoundsDir);
+      files.forEach(file => {
+        const src = path.join(runtimeSoundsDir, file);
+        if (fs.statSync(src).isFile()) {
+          copyFileToDest(src, PUBLIC_SOUNDS_DIR, file);
+        }
+      });
+    } catch (e) {
+      console.error('Error reading runtime defaults sounds/', e);
+    }
+  }
+
+  // 2. Support flat directory mapping by extension (helpful for simple flat directories)
+  try {
+    const rootFiles = fs.readdirSync(RUNTIME_DEFAULTS_DIR);
+    rootFiles.forEach(file => {
+      const src = path.join(RUNTIME_DEFAULTS_DIR, file);
+      if (fs.statSync(src).isFile()) {
+        const ext = path.extname(file).toLowerCase();
+        if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+          copyFileToDest(src, PUBLIC_IMAGES_DIR, file);
+        } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(ext)) {
+          copyFileToDest(src, PUBLIC_SOUNDS_DIR, file);
+        }
+      }
+    });
+  } catch (e) {
+    console.error('Error reading runtime defaults root folder:', e);
+  }
+}
+
+// 3. Automatically copy ALL files from default directories to persistent volume assets (/uploads/*) if missing
 function copyAllDefaultsToPersistent() {
   if (fs.existsSync(PUBLIC_IMAGES_DIR)) {
     try {
@@ -99,6 +170,7 @@ function copyAllDefaultsToPersistent() {
   }
 }
 
+copyRuntimeVolumeDefaults();
 copyAllDefaultsToPersistent();
 
 // Pure JS/TS file-based JSON database engine for 100% hosting environment reliability without binary conflicts
