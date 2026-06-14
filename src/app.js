@@ -33,7 +33,7 @@ const TRANSLATIONS = {
     recWinDesc: "勝利",
     recLossDesc: "敗北",
     recDrawBtn: "引き分けを記録する",
-    lblReason: "原因・メモ (200文字以下):",
+    lblReason: "輸贏過程の記述 (200文字以下):",
     lblProof: "決闘証拠のスクリーンショット (任意):",
     chooseFile: "ファイル選択",
     decideLbl: "決闘記録を登録する",
@@ -108,7 +108,7 @@ const TRANSLATIONS = {
     recWinDesc: "勝利",
     recLossDesc: "敗北",
     recDrawBtn: "可選: 記錄一筆 平手 (和局)",
-    lblReason: "原因/備註 (200字以內):",
+    lblReason: "描述輸贏過程 (200字以內):",
     lblProof: "輸贏憑證截圖 (選填):",
     chooseFile: "選擇檔案",
     decideLbl: "決定登錄決鬥紀錄",
@@ -258,7 +258,7 @@ const TRANSLATIONS = {
     recWinDesc: "VICTORY",
     recLossDesc: "DEFEATED",
     recDrawBtn: "Record a DRAW (TIE) OUTCOME",
-    lblReason: "Reason / Memo (Max 200 chars):",
+    lblReason: "Describe Win/Loss Process (Max 200 chars):",
     lblProof: "Proof Voucher Screenshot (Optional):",
     chooseFile: "CHOOSE FILE",
     decideLbl: "SUBMIT DUEL REGISTRATION",
@@ -357,7 +357,8 @@ let selectedOutcome = 'win'; // 'win', 'loss', or 'draw'
 let synthesizedIntervalId = null;
 let currentSynthAudioCtx = null;
 let customBgmInstance = null; // HTMLAudioElement for custom uploaded BGM
-let isBgmPlaying = false;
+let isBgmPlaying = true;
+let bgmHasStarted = false;
 
 // Resolve quotes properly depending on current selected language
 function getLocalizedQuote(rawQuoteStr, fallbackDefault) {
@@ -386,6 +387,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Set default active tab
   switchActiveTab('home');
+
+  // BGM Auto-play trigger on first user interaction
+  const startBgmOnInteraction = () => {
+    if (isBgmPlaying && !bgmHasStarted) {
+      bgmHasStarted = true;
+      startLoopingMusic();
+    }
+    // Remove the listener once triggered
+    document.removeEventListener('click', startBgmOnInteraction);
+    document.removeEventListener('keydown', startBgmOnInteraction);
+    document.removeEventListener('touchstart', startBgmOnInteraction);
+  };
+  document.addEventListener('click', startBgmOnInteraction);
+  document.addEventListener('keydown', startBgmOnInteraction);
+  document.addEventListener('touchstart', startBgmOnInteraction);
 });
 
 // Setup Supabase Auth Station Bindings & Controller
@@ -1018,6 +1034,16 @@ function applyLocalizationBundle() {
 
   // BGM Active Status Text Indicator
   safeSetInnerText('bgm-status-text', isBgmPlaying ? dictionary.on : dictionary.off);
+  const bgmBtn = document.getElementById('bgm-ctrl-btn');
+  if (bgmBtn) {
+    if (isBgmPlaying) {
+      bgmBtn.style.borderColor = '#ffffff';
+      bgmBtn.style.color = '#ffffff';
+    } else {
+      bgmBtn.style.borderColor = '';
+      bgmBtn.style.color = '';
+    }
+  }
 
   // Ensure dynamic statistics metrics & quotes match the dictionary instantly
   try {
