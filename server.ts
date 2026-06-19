@@ -5,6 +5,25 @@ import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
+
+dotenv.config();
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+
+let supabase: any = null;
+if (supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http')) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    console.log('[Supabase Client] Initialized successfully with configured credentials.');
+  } catch (err: any) {
+    console.error('[Supabase Client] Failed to create client:', err.message);
+  }
+} else {
+  console.log('[Supabase Client] Credentials missing or invalid URL. Running with full local file-based storage fallback!');
+}
 
 const app = express();
 const PORT = 3000;
@@ -174,7 +193,7 @@ copyRuntimeVolumeDefaults();
 copyAllDefaultsToPersistent();
 
 // Pure JS/TS file-based JSON database engine for 100% hosting environment reliability without binary conflicts
-class JsonDatabase {
+class LocalJsonDatabase {
   private recordsFile = path.join(DATA_DIR, 'records.json');
   private settingsFile = path.join(DATA_DIR, 'settings.json');
   private userSettingsFile = path.join(DATA_DIR, 'user_settings.json');
@@ -210,7 +229,7 @@ class JsonDatabase {
         { key: 'loss_meme_url', value: `/uploads/${extLoss}` },
         { key: 'loss_meme_quote', value: '投降輸一半|Mission Failed...|何者なんだ、これ...' },
         { key: 'draw_meme_url', value: `/uploads/${extTie}` },
-        { key: 'draw_meme_quote', value: '沒輸沒贏|Double KO!|勝負つかず...' },
+        { key: 'draw_meme_quote', value: '沒輸沒營|Double KO!|勝負つかず...' },
         { key: 'lang', value: 'ja' },
         { key: 'bgm_path', value: extBgm },
         { key: 'win_sound_path', value: extWinSound },
@@ -404,7 +423,194 @@ class JsonDatabase {
   }
 }
 
-const db = new JsonDatabase();
+const localDb = new LocalJsonDatabase();
+
+class SupabaseDatabase {
+  async getRecords(userId?: string): Promise<any[]> {
+    if (!supabase) {
+      console.log('[SupabaseDatabase] Missing client. Using local database.');
+      return localDb.getRecords(userId);
+    }
+    try {
+      let query = supabase
+        .from('records')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (userId) {
+        query = query.eq('user_id', userId);
+      } else {
+        query = query.is('user_id', null);
+      }
+      
+      const { data, error } = await query;
+      if (error) {
+        console.error('[SupabaseDatabase] getRecords error:', error.message);
+        return localDb.getRecords(userId);
+      }
+      return data || [];
+    } catch (e: any) {
+      console.error('[SupabaseDatabase] getRecords exception:', e.message);
+      return localDb.getRecords(userId);
+    }
+  }
+
+  async getRecordById(id: number, userId?: string): Promise<any> {
+    if (!supabase) {
+      return localDb.getRecordById(id, userId);
+    }
+    try {
+      let query = supabase
+        .from('records')
+        .select('*')
+        .eq('id', id);
+      
+      if (userId) {
+        query = query.eq('user_id', userId);
+      } else {
+        query = query.is('user_id', null);
+      }
+      
+      const { data, error } = await query;
+      if (error || !data || data.length === 0) {
+        return localDb.getRecordById(id, userId);
+      }
+      return data[0];
+    } catch (e: any) {
+      console.error('[SupabaseDatabase] getRecordById exception:', e.message);
+      return localDb.getRecordById(id, userId);
+    }
+  }
+
+  async addRecord(type: string, reason: string, image_path: string | null, userId?: string): Promise<any> {
+    if (!supabase) {
+      return localDb.addRecord(type, reason, image_path, userId);
+    }
+    try {
+      const recordToInsert = {
+        type,
+        reason: reason || '',
+        image_path,
+        user_id: userId || null
+      };
+      
+      const { data, error } = await supabase
+        .from('records')
+        .insert(recordToInsert)
+        .select();
+        
+      if (error) {
+        console.error('[SupabaseDatabase] addRecord error:', error.message);
+        return localDb.addRecord(type, reason, image_path, userId);
+      }
+      return data ? data[0] : recordToInsert;
+    } catch (e: any) {
+      console.error('[SupabaseDatabase] addRecord exception:', e.message);
+      return localDb.addRecord(type, reason, image_path, userId);
+    }
+  }
+
+  async deleteRecord(id: number, userId?: string): Promise<boolean> {
+    if (!supabase) {
+      return localDb.deleteRecord(id, userId);
+    }
+    try {
+      let query = supabase
+        .from('records')
+        .delete()
+        .eq('id', id);
+        
+      if (userId) {
+        query = query.eq('user_id', userId);
+      } else {
+        query = query.is('user_id', null);
+      }
+      
+      const { error } = await query;
+      if (error) {
+        console.error('[SupabaseDatabase] deleteRecord error:', error.message);
+        return localDb.deleteRecord(id, userId);
+      }
+      return true;
+    } catch (e: any) {
+      console.error('[SupabaseDatabase] deleteRecord exception:', e.message);
+      return localDb.deleteRecord(id, userId);
+    }
+  }
+
+  async getSettings(userId?: string): Promise<Record<string, string>> {
+    const baseSettings = localDb.getSettings();
+    if (!supabase) {
+      return localDb.getSettings(userId);
+    }
+    try {
+      // 1. Fetch global settings
+      const { data: globalData, error: globalErr } = await supabase
+        .from('settings')
+        .select('key, value')
+        .eq('user_id', 'global');
+        
+      if (globalErr) {
+        console.warn('[SupabaseDatabase] getSettings (global) error:', globalErr.message);
+      } else if (globalData) {
+        globalData.forEach((row: any) => {
+          baseSettings[row.key] = row.value;
+        });
+      }
+      
+      // 2. Fetch user overrides
+      if (userId) {
+        const { data: userData, error: userErr } = await supabase
+          .from('settings')
+          .select('key, value')
+          .eq('user_id', userId);
+          
+        if (userErr) {
+          console.warn(`[SupabaseDatabase] getSettings (user: ${userId}) error:`, userErr.message);
+        } else if (userData) {
+          userData.forEach((row: any) => {
+            baseSettings[row.key] = row.value;
+          });
+        }
+      }
+      return baseSettings;
+    } catch (e: any) {
+      console.error('[SupabaseDatabase] getSettings exception:', e.message);
+      return localDb.getSettings(userId);
+    }
+  }
+
+  async updateSettings(updates: Record<string, string>, userId?: string): Promise<void> {
+    localDb.updateSettings(updates, userId);
+    if (!supabase) {
+      return;
+    }
+    const targetUserId = userId || 'global';
+    try {
+      const rowsToUpsert = Object.entries(updates).map(([key, value]) => ({
+        user_id: targetUserId,
+        key,
+        value: String(value)
+      }));
+      
+      if (rowsToUpsert.length > 0) {
+        const { error } = await supabase
+          .from('settings')
+          .upsert(rowsToUpsert, { onConflict: 'user_id,key' });
+          
+        if (error) {
+          console.error('[SupabaseDatabase] updateSettings error:', error.message);
+        } else {
+          console.log(`[SupabaseDatabase] Synced ${rowsToUpsert.length} settings to Supabase for ${targetUserId}.`);
+        }
+      }
+    } catch (e: any) {
+      console.error('[SupabaseDatabase] updateSettings exception:', e.message);
+    }
+  }
+}
+
+const db = new SupabaseDatabase();
 
 // Setup Express middleware
 app.use(express.json());
@@ -434,58 +640,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Helper to extract user_id from headers or query parameters for versatile OIDC / multi-tenant execution
+// Helper to extract user_id (disabled: auth-free global session mode)
 const getUserId = (req: express.Request): string | undefined => {
-  // 1. Attempt to get verified sub from Authorization Bearer token (Supabase Auth Session)
-  const authHeader = req.headers.authorization || req.headers.Authorization;
-  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    const jwtSecret = process.env.SUPABASE_JWT_SECRET;
-    if (jwtSecret) {
-      try {
-        const decoded = jwt.verify(token, jwtSecret) as any;
-        if (decoded && decoded.sub) {
-          return decoded.sub;
-        }
-      } catch (err: any) {
-        console.warn('JWT verification failed (verify error):', err.message);
-        // Graceful Fallback: decode without verification if verifying throws errors like 'invalid algorithm' or invalid key formats
-        try {
-          const decoded = jwt.decode(token) as any;
-          if (decoded && decoded.sub) {
-            console.log('JWT verification bypassed to safe fallback decode. User sub verified:', decoded.sub);
-            return decoded.sub;
-          }
-        } catch (decodeErr: any) {
-          console.warn('JWT fallback decode also failed:', decodeErr.message);
-        }
-      }
-    } else {
-      // Fallback: If secret is not provided, decode without verifying (extremely useful for quick local dev or dev setup)
-      try {
-        const decoded = jwt.decode(token) as any;
-        if (decoded && decoded.sub) {
-          return decoded.sub;
-        }
-      } catch (err: any) {
-        console.warn('JWT decode failed:', err.message);
-      }
-    }
-  }
-
-  // 2. Fallback to older header x-user-id or query parameters for simpler multi-tenant operations
-  const val = req.headers['x-user-id'] || req.query.user_id;
-  if (typeof val === 'string' && val.trim() !== '') {
-    return val.trim();
-  }
   return undefined;
 };
 
 // GET all records
-app.get('/api/records', (req, res) => {
+app.get('/api/records', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const rows = db.getRecords(userId);
+    const rows = await db.getRecords(userId);
     res.json(rows);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -493,7 +657,7 @@ app.get('/api/records', (req, res) => {
 });
 
 // POST score record (incorporating upload & user context)
-app.post('/api/records', upload.single('image'), (req, res) => {
+app.post('/api/records', upload.single('image'), async (req, res) => {
   const { type, reason } = req.body;
   const image_path = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -503,7 +667,7 @@ app.post('/api/records', upload.single('image'), (req, res) => {
 
   try {
     const userId = getUserId(req);
-    const newRecord = db.addRecord(type, reason || '', image_path, userId);
+    const newRecord = await db.addRecord(type, reason || '', image_path, userId);
     res.json(newRecord);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -511,12 +675,12 @@ app.post('/api/records', upload.single('image'), (req, res) => {
 });
 
 // DELETE a score record
-app.delete('/api/records/:id', (req, res) => {
+app.delete('/api/records/:id', async (req, res) => {
   const idNum = parseInt(req.params.id, 10);
   const userId = getUserId(req);
   
   try {
-    const record = db.getRecordById(idNum, userId);
+    const record = await db.getRecordById(idNum, userId);
     if (record && record.image_path) {
       const filename = path.basename(record.image_path);
       const filePath = path.join(ASSETS_DIR, filename);
@@ -528,7 +692,7 @@ app.delete('/api/records/:id', (req, res) => {
       }
     }
     
-    const deleted = db.deleteRecord(idNum, userId);
+    const deleted = await db.deleteRecord(idNum, userId);
     if (!deleted) {
       return res.status(404).json({ error: 'Record not found or unauthorized' });
     }
@@ -539,10 +703,10 @@ app.delete('/api/records/:id', (req, res) => {
 });
 
 // GET settings
-app.get('/api/settings', (req, res) => {
+app.get('/api/settings', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const settings = db.getSettings(userId);
+    const settings = await db.getSettings(userId);
     res.json(settings);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -550,10 +714,10 @@ app.get('/api/settings', (req, res) => {
 });
 
 // UPDATE settings (text fields)
-app.post('/api/settings', (req, res) => {
+app.post('/api/settings', async (req, res) => {
   try {
     const userId = getUserId(req);
-    db.updateSettings(req.body, userId);
+    await db.updateSettings(req.body, userId);
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -572,7 +736,7 @@ app.post('/api/settings/assets', upload.fields([
   { name: 'select_win_sound_file', maxCount: 1 },
   { name: 'select_loss_sound_file', maxCount: 1 },
   { name: 'submit_sound_file', maxCount: 1 }
-]), (req, res) => {
+]), async (req, res) => {
   const filesObj = req.files as Record<string, Express.Multer.File[]>;
   if (!filesObj) {
     return res.status(400).json({ error: 'No assets uploaded.' });
@@ -613,7 +777,7 @@ app.post('/api/settings/assets', upload.fields([
 
   try {
     const userId = getUserId(req);
-    db.updateSettings(updates, userId);
+    await db.updateSettings(updates, userId);
     res.json({ success: true, updates });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
