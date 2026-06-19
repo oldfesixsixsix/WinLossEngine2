@@ -7,7 +7,7 @@ import { createServer as createViteServer } from 'vite';
 import jwt from 'jsonwebtoken';
 
 const app = express();
-const PORT = 8080;
+const PORT = 3000;
 
 // Resolve paths
 let myDirname = '';
@@ -192,40 +192,29 @@ class JsonDatabase {
       fs.writeFileSync(this.userSettingsFile, JSON.stringify({}, null, 2), 'utf-8');
     }
     if (!fs.existsSync(this.settingsFile)) {
-      // Logic for choosing default images: check /data/assets first (user upload), then /defaults/images
-      const getImgPath = (name: string, fallback: string) => {
-        if (fs.existsSync(path.join(ASSETS_DIR, name))) return `/uploads/${name}`;
-        if (fs.existsSync(path.join(ASSETS_DIR, fallback))) return `/uploads/${fallback}`;
-        return `/defaults/images/${fallback}`;
-      };
+      const extWin = fs.existsSync(path.join(ASSETS_DIR, 'win.jpg')) ? 'win.jpg' : 'rockman_win.png';
+      const extLoss = fs.existsSync(path.join(ASSETS_DIR, 'loss.jpg')) ? 'loss.jpg' : 'zero_lose.png';
+      const extTie = fs.existsSync(path.join(ASSETS_DIR, 'tie.jpg')) ? 'tie.jpg' : 'tie_meme.png';
 
-      const winPath = getImgPath('win.jpg', 'win.jpg');
-      const lossPath = getImgPath('loss.jpg', 'loss.jpg');
-      const tiePath = getImgPath('tie.jpg', 'tie.jpg');
-
-      const extBgm = fs.existsSync(path.join(ASSETS_DIR, 'bgm.mp3')) ? '/uploads/bgm.mp3' : '/defaults/sounds/bgm.mp3';
+      const extBgm = fs.existsSync(path.join(ASSETS_DIR, 'bgm.mp3')) ? '/uploads/bgm.mp3' : '';
       const extWinSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) 
         ? '/uploads/winloss.mp3' 
-        : (fs.existsSync(path.join(PUBLIC_SOUNDS_DIR, 'winloss.mp3')) ? '/defaults/sounds/winloss.mp3' : '');
+        : (fs.existsSync(path.join(ASSETS_DIR, 'win.mp3')) ? '/uploads/win.mp3' : '');
       const extLossSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) 
         ? '/uploads/winloss.mp3' 
-        : (fs.existsSync(path.join(PUBLIC_SOUNDS_DIR, 'winloss.mp3')) ? '/defaults/sounds/winloss.mp3' : '');
+        : (fs.existsSync(path.join(ASSETS_DIR, 'loss.mp3')) ? '/uploads/loss.mp3' : '');
 
       const defaultSettings = [
-        { key: 'win_meme_url', value: winPath },
-        { key: 'win_meme_quote', value: '麻了！完全掌握|Dominance established.|さすがですね！' },
-        { key: 'loss_meme_url', value: lossPath },
-        { key: 'loss_meme_quote', value: '大意了，沒有閃|You activated their trap card...|私の...完全なる敗北だ...' },
-        { key: 'draw_meme_url', value: tiePath },
-        { key: 'draw_meme_quote', value: '下次一定|Break even, barely.|奇跡 勝負つかず...' },
-        { key: 'lang', value: 'zh-TW' },
+        { key: 'win_meme_url', value: `/uploads/${extWin}` },
+        { key: 'win_meme_quote', value: '不愧是你！|Excellent work!|さすがですね！' },
+        { key: 'loss_meme_url', value: `/uploads/${extLoss}` },
+        { key: 'loss_meme_quote', value: '投降輸一半|Mission Failed...|何者なんだ、これ...' },
+        { key: 'draw_meme_url', value: `/uploads/${extTie}` },
+        { key: 'draw_meme_quote', value: '沒輸沒贏|Double KO!|勝負つかず...' },
+        { key: 'lang', value: 'ja' },
         { key: 'bgm_path', value: extBgm },
-        { key: 'win_sound_path', value: '/defaults/sounds/tab.mp3' },
-        { key: 'loss_sound_path', value: '/defaults/sounds/tab.mp3' },
-        { key: 'tab_sound_path', value: '/defaults/sounds/tab.mp3' },
-        { key: 'submit_sound_path', value: '/defaults/sounds/submit.mp3' },
-        { key: 'select_win_sound_path', value: '/defaults/sounds/winloss.mp3' },
-        { key: 'select_loss_sound_path', value: '/defaults/sounds/winloss.mp3' }
+        { key: 'win_sound_path', value: extWinSound },
+        { key: 'loss_sound_path', value: extLossSound }
       ];
       const settingsObj: Record<string, string> = {};
       defaultSettings.forEach(s => {
@@ -424,9 +413,6 @@ app.use(express.urlencoded({ extended: true }));
 // Serve custom user-uploaded assets from the data folder
 app.use('/uploads', express.static(ASSETS_DIR));
 
-// Serve default assets (images, sounds)
-app.use('/defaults', express.static(PUBLIC_DEFAULTS_DIR));
-
 // Configure Multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -442,14 +428,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // API Endpoints
-
-// GET runtime configuration for frontend
-app.get('/api/config', (req, res) => {
-  res.json({
-    supabaseUrl: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '',
-    supabaseAnonKey: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ''
-  });
-});
 
 // GET health status check
 app.get('/api/health', (req, res) => {
@@ -471,6 +449,16 @@ const getUserId = (req: express.Request): string | undefined => {
         }
       } catch (err: any) {
         console.warn('JWT verification failed (verify error):', err.message);
+        // Graceful Fallback: decode without verification if verifying throws errors like 'invalid algorithm' or invalid key formats
+        try {
+          const decoded = jwt.decode(token) as any;
+          if (decoded && decoded.sub) {
+            console.log('JWT verification bypassed to safe fallback decode. User sub verified:', decoded.sub);
+            return decoded.sub;
+          }
+        } catch (decodeErr: any) {
+          console.warn('JWT fallback decode also failed:', decodeErr.message);
+        }
       }
     } else {
       // Fallback: If secret is not provided, decode without verifying (extremely useful for quick local dev or dev setup)

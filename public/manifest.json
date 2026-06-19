@@ -9,15 +9,15 @@
   "theme_color": "#02040a",
   "icons": [
     {
-      "src": "/defaults/images/win.jpg",
+      "src": "/uploads/rockman_win.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/defaults/images/loss.jpg",
+      "src": "/uploads/zero_lose.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

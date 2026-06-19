@@ -6,9 +6,9 @@ const PRECACHE_RESOURCES = [
   '/src/app.js',
   '/src/index.css',
   '/manifest.json',
-  '/defaults/images/win.jpg',
-  '/defaults/images/loss.jpg',
-  '/defaults/images/tie.jpg'
+  '/uploads/rockman_win.png',
+  '/uploads/zero_lose.png',
+  '/uploads/tie_meme.png'
 ];
 
 const isDev = self.location.hostname.includes('localhost') || 

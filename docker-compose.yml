@@ -6,6 +6,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./data:/app/data
+      - ./win-loss-data:/app/data
+      # Optional: Mount your customized defaults folder to override pre-installed assets directly from host
+      # - ./defaults:/app/defaults
     environment:
       - NODE_ENV=production
