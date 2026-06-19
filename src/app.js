@@ -1,12 +1,34 @@
 // Rockman X4 Duel Win/Loss Tracker - CLIENT CONTROLLER
-import { supabase, isSupabaseConfigured } from './supabase.js';
+import { UnclereалClient } from 'unclereal-login';
+
+const unclerealAuth = new UnclereалClient({
+  redirectTo: window.location.origin,
+  authUrl: "https://auth-page-xi-ochre.vercel.app"
+});
 
 // Exception-safe, high-precision secureFetch wrapper
 async function secureFetch(url, options = {}) {
   const headers = options.headers || {};
+  let currentHeaders = { ...headers };
+  
+  try {
+    const session = unclerealAuth.getSession();
+    if (session) {
+      currentHeaders['Authorization'] = `Bearer ${session.accessToken}`;
+      currentHeaders['x-user-id'] = session.user.id;
+    } else {
+      const guestId = sessionStorage.getItem('guest_user_id');
+      if (guestId) {
+        currentHeaders['x-user-id'] = guestId;
+      }
+    }
+  } catch (err) {
+    console.warn('Secure fetch failed to extract Unclereal tokens', err);
+  }
+  
   return fetch(url, {
     ...options,
-    headers: { ...headers }
+    headers: currentHeaders
   });
 }
 
@@ -364,7 +386,14 @@ function getLocalizedQuote(rawQuoteStr, fallbackDefault) {
 
 // 1. Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
-  setupSupabaseAuth();
+  // Process the Unclereal auth callback if returning from login
+  try {
+    await unclerealAuth.handleCallback();
+  } catch (err) {
+    console.error("Unclereal login callback error", err);
+  }
+
+  setupUnclerealAuth();
   await loadSettingsFromServer();
   await refreshRecords();
   initMainEventBindings();
@@ -374,24 +403,172 @@ document.addEventListener('DOMContentLoaded', async () => {
   switchActiveTab('home');
 });
 
-// Setup Supabase Auth Station Bindings & Controller
-function setupSupabaseAuth() {
-  // Hide Auth section entirely since auth logic is removed
-  const authStation = document.getElementById('auth-station');
-  if (authStation) {
-    authStation.classList.add('hidden');
+// Setup Unclereal Auth Station Bindings & Controller
+function setupUnclerealAuth() {
+  const unconfiguredEl = document.getElementById('auth-state-unconfigured');
+  const loggedOutEl = document.getElementById('auth-state-logged-out');
+  const loggedInEl = document.getElementById('auth-state-logged-in');
+  
+  const btnBypass = document.getElementById('auth-btn-bypass');
+  const btnGoogle = document.getElementById('auth-btn-google');
+  const btnGithub = document.getElementById('auth-btn-github');
+  const btnSignout = document.getElementById('auth-btn-signout');
+  const statusMsg = document.getElementById('auth-status-msg');
+  const userEmailSpan = document.getElementById('auth-user-email');
+  const userUuidSpan = document.getElementById('auth-user-uuid');
+  
+  const authToggleBtn = document.getElementById('auth-toggle-collapse-btn');
+  const authContentArea = document.getElementById('auth-panel-content-area');
+
+  // Top-Right Header Widgets
+  const headerLoginBtn = document.getElementById('header-login-btn');
+  const headerUserProfile = document.getElementById('header-user-profile');
+  const headerUserAvatar = document.getElementById('header-user-avatar');
+  const headerUserDisplay = document.getElementById('header-user-display');
+  const headerLogoutBtn = document.getElementById('header-logout-btn');
+
+  // Hide the "Supabase unconfigured" warning since we look at Unclereal login
+  if (unconfiguredEl) {
+    unconfiguredEl.classList.add('hidden');
   }
 
-  const headerUserWidget = document.getElementById('header-user-widget');
-  if (headerUserWidget) {
-    headerUserWidget.classList.add('hidden');
+  // Panel toggle collapse
+  let isCollapsed = false;
+  if (authToggleBtn && authContentArea) {
+    authToggleBtn.addEventListener('click', () => {
+      isCollapsed = !isCollapsed;
+      if (isCollapsed) {
+        authContentArea.classList.add('hidden');
+        authToggleBtn.innerText = 'EXPAND';
+      } else {
+        authContentArea.classList.remove('hidden');
+        authToggleBtn.innerText = 'MINIMIZE';
+      }
+    });
   }
 
-  // Dynamic Database Subheader indicator
-  const dbLabel = document.getElementById('header-sub-r');
-  if (dbLabel) {
-    dbLabel.innerText = "DATABASE: CLOUD STORAGE SYNCED";
+  // Helper update states
+  async function updateAuthState() {
+    try {
+      const session = unclerealAuth.getSession();
+      const guestId = sessionStorage.getItem('guest_user_id');
+
+      if (session && session.user) {
+        if (loggedInEl) loggedInEl.classList.remove('hidden');
+        if (loggedOutEl) loggedOutEl.classList.add('hidden');
+        if (userEmailSpan) userEmailSpan.innerText = session.user.name || session.user.email || 'UNCLEREAL PLAYER';
+        if (userUuidSpan) userUuidSpan.innerText = session.user.id;
+
+        // Top-Right Header configs
+        if (headerLoginBtn) headerLoginBtn.classList.add('hidden');
+        if (headerUserProfile) headerUserProfile.classList.remove('hidden');
+        
+        const avatarUrl = session.user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(session.user.id)}`;
+        const displayName = session.user.name || session.user.email?.split('@')[0] || 'Unclereal User';
+
+        if (headerUserAvatar) headerUserAvatar.src = avatarUrl;
+        if (headerUserDisplay) headerUserDisplay.innerText = displayName;
+
+        // Dynamic Database Subheader indicator
+        const dbLabel = document.getElementById('header-sub-r');
+        if (dbLabel) dbLabel.innerText = "DATABASE: CLOUD SQL / UNCLEREAL";
+
+      } else if (guestId) {
+        if (loggedInEl) loggedInEl.classList.remove('hidden');
+        if (loggedOutEl) loggedOutEl.classList.add('hidden');
+        if (userEmailSpan) userEmailSpan.innerText = 'TRANSIENT GUEST (訪客)';
+        if (userUuidSpan) userUuidSpan.innerText = guestId;
+
+        // Top-Right Header configs
+        if (headerLoginBtn) headerLoginBtn.classList.add('hidden');
+        if (headerUserProfile) headerUserProfile.classList.remove('hidden');
+        
+        const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=Guest_${encodeURIComponent(guestId)}`;
+        if (headerUserAvatar) headerUserAvatar.src = avatarUrl;
+        if (headerUserDisplay) headerUserDisplay.innerText = '訪客 (GUEST)';
+
+        // Dynamic Database Subheader indicator
+        const dbLabel = document.getElementById('header-sub-r');
+        if (dbLabel) dbLabel.innerText = "DATABASE: TRANSIENT SESSION";
+
+      } else {
+        if (loggedInEl) loggedInEl.classList.add('hidden');
+        if (loggedOutEl) loggedOutEl.classList.remove('hidden');
+
+        // Top-Right Header configs
+        if (headerLoginBtn) headerLoginBtn.classList.remove('hidden');
+        if (headerUserProfile) headerUserProfile.classList.add('hidden');
+
+        // Dynamic Database Subheader indicator
+        const dbLabel = document.getElementById('header-sub-r');
+        if (dbLabel) dbLabel.innerText = "DATABASE: SQLITE3";
+      }
+    } catch (err) {
+      console.warn('Error reading auth state', err);
+    }
   }
+
+  // Local/Guest Mode bypass action
+  if (btnBypass) {
+    btnBypass.addEventListener('click', async () => {
+      const randomId = 'guest_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+      sessionStorage.setItem('guest_user_id', randomId);
+      
+      if (statusMsg) statusMsg.innerText = 'GUEST ACCESS SECURED.';
+      
+      await updateAuthState();
+      await loadSettingsFromServer();
+      await refreshRecords();
+      switchActiveTab('record');
+    });
+  }
+
+  // Sign out ACTION
+  const handleSignout = async () => {
+    try {
+      unclerealAuth.logout();
+    } catch (e) {
+      console.warn('unclereal logout error', e);
+    }
+    sessionStorage.removeItem('guest_user_id');
+    await updateAuthState();
+    await loadSettingsFromServer();
+    await refreshRecords();
+  };
+
+  if (btnSignout) {
+    btnSignout.addEventListener('click', handleSignout);
+  }
+
+  if (headerLogoutBtn) {
+    headerLogoutBtn.addEventListener('click', async () => {
+      await handleSignout();
+      switchActiveTab('home');
+    });
+  }
+
+  if (headerLoginBtn) {
+    headerLoginBtn.addEventListener('click', () => {
+      unclerealAuth.login();
+    });
+  }
+
+  // OAuth Google
+  if (btnGoogle) {
+    btnGoogle.addEventListener('click', () => {
+      unclerealAuth.login();
+    });
+  }
+
+  // OAuth GitHub
+  if (btnGithub) {
+    btnGithub.addEventListener('click', () => {
+      unclerealAuth.login();
+    });
+  }
+
+  // Fetch state first time
+  updateAuthState();
 }
 
 // Load backend configs from SQLite

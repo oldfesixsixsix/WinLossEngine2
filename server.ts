@@ -640,8 +640,48 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Helper to extract user_id (disabled: auth-free global session mode)
+// Helper to extract user_id from headers or query parameters for versatile OIDC / multi-tenant execution
 const getUserId = (req: express.Request): string | undefined => {
+  // 1. Attempt to get verified sub from Authorization Bearer token (Supabase/Unclereal Auth Session)
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    const jwtSecret = process.env.SUPABASE_JWT_SECRET;
+    if (jwtSecret) {
+      try {
+        const decoded = jwt.verify(token, jwtSecret) as any;
+        if (decoded && decoded.sub) {
+          return decoded.sub;
+        }
+      } catch (err: any) {
+        console.warn('JWT verification failed (verify error):', err.message);
+        try {
+          const decoded = jwt.decode(token) as any;
+          if (decoded && decoded.sub) {
+            return decoded.sub;
+          }
+        } catch (decodeErr: any) {}
+      }
+    } else {
+      try {
+        const decoded = jwt.decode(token) as any;
+        if (decoded && decoded.sub) {
+          return decoded.sub;
+        }
+        if (decoded && decoded.id) {
+          return decoded.id;
+        }
+      } catch (err: any) {
+        console.warn('JWT decode failed:', err.message);
+      }
+    }
+  }
+
+  // 2. Fallback to older header x-user-id or query parameters
+  const val = req.headers['x-user-id'] || req.query.user_id;
+  if (typeof val === 'string' && val.trim() !== '') {
+    return val.trim();
+  }
   return undefined;
 };
 
