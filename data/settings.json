@@ -1,0 +1,12 @@
+{
+  "win_meme_url": "/uploads/win.png",
+  "win_meme_quote": "不愧是你！|Excellent work!|さすがですね！",
+  "loss_meme_url": "/uploads/loss.png",
+  "loss_meme_quote": "投降輸一半|Mission Failed...|何者なんだ、これ...",
+  "draw_meme_url": "/uploads/tie.png",
+  "draw_meme_quote": "沒輸沒贏|Double KO!|勝負つかず...",
+  "lang": "ja",
+  "bgm_path": "",
+  "win_sound_path": "",
+  "loss_sound_path": ""
+}

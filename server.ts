@@ -63,9 +63,9 @@ if (!fs.existsSync(PUBLIC_SOUNDS_DIR)) {
 
 // 1. Copy default pre-generated pixel art images to public defaults folder if it's currently empty
 const defaultMapping = [
-  { src: 'rockman_win_1781102046763.png', dest: 'rockman_win.png' },
-  { src: 'zero_lose_1781102061526.png', dest: 'zero_lose.png' },
-  { src: 'tie_meme_1781102077141.png', dest: 'tie_meme.png' }
+  { src: 'win.png', dest: 'win.png' },
+  { src: 'loss.png', dest: 'loss.png' },
+  { src: 'tie.png', dest: 'tie.png' }
 ];
 
 for (const map of defaultMapping) {
@@ -211,9 +211,9 @@ class LocalJsonDatabase {
       fs.writeFileSync(this.userSettingsFile, JSON.stringify({}, null, 2), 'utf-8');
     }
     if (!fs.existsSync(this.settingsFile)) {
-      const extWin = fs.existsSync(path.join(ASSETS_DIR, 'win.jpg')) ? 'win.jpg' : 'rockman_win.png';
-      const extLoss = fs.existsSync(path.join(ASSETS_DIR, 'loss.jpg')) ? 'loss.jpg' : 'zero_lose.png';
-      const extTie = fs.existsSync(path.join(ASSETS_DIR, 'tie.jpg')) ? 'tie.jpg' : 'tie_meme.png';
+      const extWin = fs.existsSync(path.join(ASSETS_DIR, 'win.jpg')) ? 'win.jpg' : 'win.png';
+      const extLoss = fs.existsSync(path.join(ASSETS_DIR, 'loss.jpg')) ? 'loss.jpg' : 'loss.png';
+      const extTie = fs.existsSync(path.join(ASSETS_DIR, 'tie.jpg')) ? 'tie.jpg' : 'tie.png';
 
       const extBgm = fs.existsSync(path.join(ASSETS_DIR, 'bgm.mp3')) ? '/uploads/bgm.mp3' : '';
       const extWinSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) 
@@ -725,7 +725,7 @@ app.delete('/api/records/:id', async (req, res) => {
       const filename = path.basename(record.image_path);
       const filePath = path.join(ASSETS_DIR, filename);
       // Only delete if it's not our default pre-installed assets
-      if (fs.existsSync(filePath) && !['rockman_win.png', 'zero_lose.png', 'tie_meme.png'].includes(filename)) {
+      if (fs.existsSync(filePath) && !['win.png', 'loss.png', 'tie.png'].includes(filename)) {
         fs.unlink(filePath, (unlinkErr) => {
           if (unlinkErr) console.warn('Could not delete file:', filePath);
         });

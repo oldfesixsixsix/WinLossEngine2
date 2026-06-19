@@ -631,8 +631,8 @@ async function loadSettingsFromServer() {
       safeSetInputValue('set-quote-loss', backendSettings.loss_meme_quote || '');
 
       // Update default display pictures if they changed
-      safeSetImgSrc('display-win-image', backendSettings.win_meme_url || '/defaults/images/rockman_win.png');
-      safeSetImgSrc('display-loss-image', backendSettings.loss_meme_url || '/defaults/images/zero_lose.png');
+      safeSetImgSrc('display-win-image', backendSettings.win_meme_url || '/defaults/images/win.png');
+      safeSetImgSrc('display-loss-image', backendSettings.loss_meme_url || '/defaults/images/loss.png');
 
       applyLocalizationBundle();
     }
@@ -1480,7 +1480,7 @@ function updateStatisticsMetrics(period = 'day') {
 
   if (wins > losses) {
     // Win Status
-    if (memeImg) memeImg.src = backendSettings.win_meme_url || '/defaults/images/rockman_win.png';
+    if (memeImg) memeImg.src = backendSettings.win_meme_url || '/defaults/images/win.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusWin;
       badgeSpan.style.color = '#00f2ff';
@@ -1492,7 +1492,7 @@ function updateStatisticsMetrics(period = 'day') {
     if (quoteDiv) quoteDiv.innerText = `"${activeQuote}"`;
   } else if (wins < losses) {
     // Loss Status
-    if (memeImg) memeImg.src = backendSettings.loss_meme_url || '/defaults/images/zero_lose.png';
+    if (memeImg) memeImg.src = backendSettings.loss_meme_url || '/defaults/images/loss.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusLoss;
       badgeSpan.style.color = '#ff0055';
@@ -1504,7 +1504,7 @@ function updateStatisticsMetrics(period = 'day') {
     if (quoteDiv) quoteDiv.innerText = `"${activeQuote}"`;
   } else {
     // Equal Draw Status (including 0 records)
-    if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/defaults/images/tie_meme.png';
+    if (memeImg) memeImg.src = backendSettings.draw_meme_url || '/defaults/images/tie.png';
     if (badgeSpan) {
       badgeSpan.innerText = dictionary.statusEqual;
       badgeSpan.style.color = '#ffffff';
