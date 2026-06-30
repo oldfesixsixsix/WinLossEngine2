@@ -7,7 +7,7 @@ const PRECACHE_RESOURCES = [
   '/src/index.css',
   '/manifest.json',
   '/uploads/win.png',
-  '/uploads/lose.png',
+  '/uploads/loss.png',
   '/uploads/tie.png'
 ];
 

@@ -90,77 +90,22 @@
                 <div>Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable user cloud sign-in.</div>
               </div>
 
-              <!-- STATE 2: NOT LOGGED IN / SIGN IN CARD -->
-              <div id="auth-state-logged-out" class="space-y-4 hidden">
-                <div class="text-[9.5px] text-[#a4bdcf] font-mono text-center leading-relaxed">
-                  CHOOSE A SECURE VERIFICATION CHANNEL OR ENTER TRANSIENT GUEST MODE:
-                </div>
-
-                <!-- OAuth Buttons -->
-                <div class="grid grid-cols-2 gap-2 font-sans">
-                  <button id="auth-btn-google" class="pixel-btn text-[9px] py-2 flex items-center justify-center gap-1.5 border-none bg-[#2a1111] text-[#ff6666] hover:bg-[#3d1a1a] font-bold">
-                    <span class="text-[10px]">🔴</span> GOOGLE OAUTH
-                  </button>
-                  <button id="auth-btn-github" class="pixel-btn text-[9px] py-2 flex items-center justify-center gap-1.5 border-none bg-[#1a1c23] text-[#cfd3dc] hover:bg-[#252832] font-bold">
-                    <span class="text-[10px]">🐈</span> GITHUB OAUTH
-                  </button>
-                </div>
-
-                <div class="border-t border-[#3b3f46]/50 pt-2.5">
-                  <button id="auth-btn-bypass" class="w-full pixel-btn text-[10px] py-2 font-bold text-[#ffd700] bg-[#1a1d24] border border-[#ffd700]/30 hover:border-[#ffd700] uppercase font-sans tracking-wide">
-                    🚪 ENTER GUEST MODE (儲存於 Session / 關閉分頁消失)
-                  </button>
-                </div>
-                
-                <div id="auth-status-msg" class="text-[8px] font-mono text-[#00f2ff] text-center truncate uppercase"></div>
-              </div>
-
-              <!-- STATE 3: LOGGED IN USER CONTEXT -->
-              <div id="auth-state-logged-in" class="hidden flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs bg-[#1a1d24]/80 p-2 border border-[#448dff]/40 rounded relative overflow-hidden font-sans">
-                <!-- Sleek left side player spec -->
-                <div class="space-y-0.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#00ff55] animate-pulse"></span>
-                    <span class="text-[8px] text-[#00ff55] font-bold uppercase tracking-wider">ONLINE CHANNELS SECURED</span>
-                  </div>
-                  <div class="font-mono text-[9px] text-white leading-none">
-                    PLAYER ID: <span id="auth-user-email" class="font-bold text-[#00f2ff]">guest@domain.com</span>
-                  </div>
-                  <div class="text-[8px] font-mono text-[#a4bdcf] leading-none select-all">
-                    UUID: <span id="auth-user-uuid" class="text-[8px]">xxxx-xxxx-xxxx-xxxx</span>
-                  </div>
-                </div>
-
-                <!-- Sign Out Button -->
-                <button id="auth-btn-signout" class="pixel-btn pixel-btn-red text-[8px] uppercase font-bold tracking-wider py-1 px-3 self-start md:self-center font-sans">
-                  🔴 LOGOUT SYSTEM (登出)
-                </button>
-              </div>
-
             </div>
           </div>
+
 
           <!-- WEBPAGE INTRODUCTION SYSTEM -->
           <div id="home-intro-widget" class="border-4 border-double border-[#9ca3af] p-4 bg-[#111317]/95 rounded shadow-lg text-white space-y-4">
             <div class="flex items-center gap-2 border-b border-[#3b3f46] pb-2 mb-2 select-none">
               <span class="text-xs text-neon-cyan">👾</span>
-              <h3 class="text-[10px] font-bold uppercase tracking-widest font-pixel font-mono text-white">SYS-INTRO: DUEL MEME HUB (洛克人戰役對決終端)</h3>
+              <h3 class="text-[10px] font-bold uppercase tracking-widest font-pixel font-mono text-white">SYS-INTRO: DUEL MEME HUB (戰役對決終端)</h3>
             </div>
             
             <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
               <div>
                 <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="text-white font-bold">歡迎來到 洛克人 X4 戰役決鬥終端紀錄系統！</span>
+                <span class="text-white font-bold">歡迎來到戰役決鬥終端紀錄系統！</span>
                 這是一個融合 16/32 位元復古大型街機美學（CRT 螢幕掃描濾鏡、Capcom 經典冷白色調、動態 Chiptune 音效合成器）與全新雲端/本地多登入身分管理的決鬥追蹤裝置。
-              </div>
-
-              <div>
-                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="font-bold text-white">雙核模式選擇：</span>
-                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
-                  <li><strong class="text-neon-cyan">雲端認證（Google / GitHub / 信箱認證）</strong>：儲存在 Supabase 高速雲端中，您的對決戰績、自訂迷因語錄與上傳的獨創音效皆能永久同步跟隨帳號，換裝置不遺失。</li>
-                  <li><strong class="text-[#ffd700]">極速訪客模式（Transient Guest）</strong>：零門檻點選，完美排除 IDP 註冊繁雜步驟。我們利用 <span class="text-[#ffd700] underline">SessionStorage</span> 連接機制，<strong class="text-white">只要關閉瀏覽器網頁分頁，該次對決數據將即刻徹底釋放消失！</strong>（適合即席測試）</li>
-                </ul>
               </div>
 
               <div>
@@ -237,7 +182,7 @@
               <!-- Reason textarea -->
               <div>
                 <label class="block text-[#a3e8ff] font-bold mb-1.5 uppercase text-[9px] font-pixel transition-colors duration-300" id="lbl-reason">Reason / Logs (原因/備註):</label>
-                <input type="text" id="input-reason" class="w-full capcom-inner-input text-xs" placeholder="e.g. 程式碼一發就過 / 打小鋼珠胡了" maxlength="200" autocomplete="off" />
+                <input type="text" id="input-reason" class="w-full capcom-inner-input text-xs" placeholder="e.g. 撿到一百塊..." maxlength="200" autocomplete="off" />
               </div>
  
               <!-- Upload Voucher Image -->

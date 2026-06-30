@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.winloss_settings (
     key text NOT NULL,
     value text NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    CONSTRAINT unique_user_key UNIQUE (user_id, key)
+    CONSTRAINT unique_winloss_user_settings_key UNIQUE (user_id, key)
 );
 
 -- 3. Enable Row Level Security (RLS) on both tables for security (Optional but Recommended)
@@ -64,11 +64,11 @@ CREATE POLICY "Allow change on settings for owner or global" ON public.winloss_s
 -- 6. Seed initial DEFAULT values for the 'global' configuration settings
 INSERT INTO public.winloss_settings (user_id, key, value) VALUES
     ('global', 'win_meme_url', '/uploads/win.png'),
-    ('global', 'win_meme_quote', '不愧是你！|Excellent work!|さすがですね！'),
-    ('global', 'loss_meme_url', '/uploads/lose.png'),
-    ('global', 'loss_meme_quote', '投降輸一半|Mission Failed...|何者なんだ、これ...'),
+    ('global', 'win_meme_quote', '麻了！完全掌握|Dominance established.|さすがですね！'),
+    ('global', 'loss_meme_url', '/uploads/loss.png'),
+    ('global', 'loss_meme_quote', '大意了，沒有閃|You activated their trap card...|私の...完全なる敗北だ....'),
     ('global', 'draw_meme_url', '/uploads/tie.png'),
-    ('global', 'draw_meme_quote', '沒輸沒贏|Double KO!|勝負つかず...'),
+    ('global', 'draw_meme_quote', '下次一定|Break even, barely.|奇跡 勝負つかず.....'),
     ('global', 'lang', 'ja'),
     ('global', 'bgm_path', ''),
     ('global', 'win_sound_path', ''),

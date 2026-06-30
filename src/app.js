@@ -1133,16 +1133,31 @@ function initMainEventBindings() {
         document.getElementById('input-reason').value = "";
         hiddenFileInput.value = "";
         filenameIndicator.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).noFileChosen;
-        filenameIndicator.classList.remove('text-[#bd53ff]');
+        filenameIndicator.classList.remove('text-[#ffffff]');
 
         // flash notification
         const headerTitle = document.getElementById('header-title');
         const oldTitleText = headerTitle.innerText;
         headerTitle.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).registryCompleted;
-        headerTitle.style.color = "#bd53ff";
+        
+        // Smooth color transition
+        headerTitle.style.transition = "color 0.4s ease";
+        if (selectedOutcome === 'win') {
+          headerTitle.style.color = "#00f2ff"; // neon blue/cyan
+        } else if (selectedOutcome === 'loss') {
+          headerTitle.style.color = "#ff3c3c"; // neon red
+        } else {
+          headerTitle.style.color = "#bd53ff"; // neon purple
+        }
+
         setTimeout(() => {
+          headerTitle.style.transition = "color 1.8s ease"; // slowly transition back to original fff
           headerTitle.innerText = oldTitleText;
-          headerTitle.style.color = "#bd53ff";
+          headerTitle.style.color = "#ffffff";
+          setTimeout(() => {
+            headerTitle.style.transition = "";
+            headerTitle.style.color = "";
+          }, 1800);
         }, 2200);
 
         await refreshRecords();
@@ -1279,6 +1294,27 @@ function initMainEventBindings() {
       stopLoopingMusic();
     }
   });
+
+  // Auto-start BGM on first user interaction anywhere
+  const autoPlayBgmOnInteraction = () => {
+    if (!isBgmPlaying) {
+      isBgmPlaying = true;
+      const stateSpan = document.getElementById('bgm-status-text');
+      if (stateSpan) stateSpan.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).on;
+      if (bgmBtn) {
+        bgmBtn.style.borderColor = '#ffffff';
+        bgmBtn.style.color = '#ffffff';
+      }
+      startLoopingMusic();
+    }
+    // Remove listeners once triggered
+    document.removeEventListener('click', autoPlayBgmOnInteraction);
+    document.removeEventListener('keydown', autoPlayBgmOnInteraction);
+    document.removeEventListener('touchstart', autoPlayBgmOnInteraction);
+  };
+  document.addEventListener('click', autoPlayBgmOnInteraction);
+  document.addEventListener('keydown', autoPlayBgmOnInteraction);
+  document.addEventListener('touchstart', autoPlayBgmOnInteraction);
 
   // Modal Lightbox controller close hooks
   document.getElementById('lightbox-close-btn').addEventListener('click', () => {
