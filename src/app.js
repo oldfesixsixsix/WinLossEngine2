@@ -1926,33 +1926,22 @@ function stopSynthBgmContinuous() {
   }
 }
 
-// Register Progressive Web App Service Worker
-const isDevDomain = window.location.hostname.includes('localhost') || 
-                    window.location.hostname.includes('127.0.0.1') || 
-                    window.location.hostname.includes('ais-dev') || 
-                    window.location.hostname.includes('ais-pre');
-
+// Always unregister any active service worker and clear caches to prevent stale offline caching issues across all environments
 if ('serviceWorker' in navigator) {
-  if (isDevDomain) {
-    // During development/preview within AI Studio, unregister existing service worker and delete cache 
-    // to prevent iframe reload lags and ensure instant real-time code updates.
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      for (const registration of registrations) {
-        registration.unregister().then(() => {
-          console.log('[X4 PWA] Unregistered service worker for live development updates.');
-        });
-      }
-    });
-    if ('caches' in window) {
-      caches.keys().then(keys => {
-        keys.forEach(key => caches.delete(key));
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (const registration of registrations) {
+      registration.unregister().then(() => {
+        console.log('[X4 PWA] Unregistered service worker to force fresh content load.');
       });
     }
-  } else {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('[X4 PWA] Service Worker registered in scope:', reg.scope))
-        .catch(err => console.error('[X4 PWA] Service Worker registration failed:', err));
+  });
+  if ('caches' in window) {
+    caches.keys().then(keys => {
+      keys.forEach(key => {
+        caches.delete(key).then(() => {
+          console.log('[X4 PWA] Deleted stale cache:', key);
+        });
+      });
     });
   }
 }
