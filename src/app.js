@@ -8,6 +8,19 @@ const unclerealAuth = new UnclereалClient({
 
 // Override login to handle iframe / top navigation beautifully
 unclerealAuth.login = function() {
+  const session = this.getSession();
+  if (session && session.user) {
+    const alertMsg = 
+      currentLang === 'zh-TW' ? "您已處於登入狀態，請先登出再切換帳號。" : 
+      currentLang === 'zh-CN' ? "您已处于登录状态，请先登出再切换账号。" :
+      currentLang === 'ja' ? "すでにログインしています。別のアカウントに切り替えるには、まずログアウトしてください。" :
+      "You are already logged in. Please log out first to switch accounts.";
+    alert(alertMsg);
+    return;
+  }
+  // Clear guest mode if switching to real login
+  sessionStorage.removeItem('guest_user_id');
+
   const params = new URLSearchParams({ redirect_to: this.config.redirectTo });
   const targetUrl = `${this.authUrl}?${params}`;
   try {
@@ -24,6 +37,7 @@ unclerealAuth.login = function() {
 };
 
 unclerealAuth.logout = function() {
+  this.clearSession();
   const params = new URLSearchParams({ redirect_to: this.config.redirectTo });
   const targetUrl = `${this.authUrl}/logout?${params}`;
   try {
