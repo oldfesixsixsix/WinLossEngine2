@@ -1,6 +1,6 @@
 {
   "name": "Rockman X4 Win Loss Tracker",
-  "description": "致敬《洛克人X4》角色選擇畫面風格的極簡霓虹像素風輸贏紀錄 App。支援 PWA 與離線快取、Express 後端與 SQLite 儲存、自定義梗圖與 16-bit 像素音樂特效！",
+  "description": "致敬《洛克人X4》角色選擇畫面風格的極簡霓虹像素風輸贏紀錄 App、Express 後端與 SQLite 儲存、自定義圖與 16-bit 像素音樂特效！",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

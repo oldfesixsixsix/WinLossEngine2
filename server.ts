@@ -483,12 +483,12 @@ class SupabaseDatabase {
       
       const { data, error } = await query;
       if (error) {
-        console.error('[SupabaseDatabase] getRecords error:', error.message);
+        console.log('[SupabaseDatabase] getRecords fallback to local database:', error.message);
         return localDb.getRecords(userId);
       }
       return data || [];
     } catch (e: any) {
-      console.error('[SupabaseDatabase] getRecords exception:', e.message);
+      console.log('[SupabaseDatabase] getRecords exception fallback to local database:', e.message);
       return localDb.getRecords(userId);
     }
   }
@@ -515,7 +515,7 @@ class SupabaseDatabase {
       }
       return data[0];
     } catch (e: any) {
-      console.error('[SupabaseDatabase] getRecordById exception:', e.message);
+      console.log('[SupabaseDatabase] getRecordById info:', e.message);
       return localDb.getRecordById(id, userId);
     }
   }
@@ -538,12 +538,12 @@ class SupabaseDatabase {
         .select();
         
       if (error) {
-        console.error('[SupabaseDatabase] addRecord error:', error.message);
+        console.log('[SupabaseDatabase] addRecord info:', error.message);
         return localDb.addRecord(type, reason, image_path, userId);
       }
       return data ? data[0] : recordToInsert;
     } catch (e: any) {
-      console.error('[SupabaseDatabase] addRecord exception:', e.message);
+      console.log('[SupabaseDatabase] addRecord info:', e.message);
       return localDb.addRecord(type, reason, image_path, userId);
     }
   }
@@ -566,12 +566,12 @@ class SupabaseDatabase {
       
       const { error } = await query;
       if (error) {
-        console.error('[SupabaseDatabase] deleteRecord error:', error.message);
+        console.log('[SupabaseDatabase] deleteRecord info:', error.message);
         return localDb.deleteRecord(id, userId);
       }
       return true;
     } catch (e: any) {
-      console.error('[SupabaseDatabase] deleteRecord exception:', e.message);
+      console.log('[SupabaseDatabase] deleteRecord info:', e.message);
       return localDb.deleteRecord(id, userId);
     }
   }
@@ -589,7 +589,7 @@ class SupabaseDatabase {
         .eq('user_id', 'global');
         
       if (globalErr) {
-        console.warn('[SupabaseDatabase] getSettings (global) error:', globalErr.message);
+        console.log('[SupabaseDatabase] getSettings (global) info:', globalErr.message);
       } else if (globalData) {
         globalData.forEach((row: any) => {
           baseSettings[row.key] = row.value;
@@ -604,7 +604,7 @@ class SupabaseDatabase {
           .eq('user_id', userId);
           
         if (userErr) {
-          console.warn(`[SupabaseDatabase] getSettings (user: ${userId}) error:`, userErr.message);
+          console.log(`[SupabaseDatabase] getSettings (user: ${userId}) info:`, userErr.message);
         } else if (userData) {
           userData.forEach((row: any) => {
             baseSettings[row.key] = row.value;
@@ -613,7 +613,7 @@ class SupabaseDatabase {
       }
       return baseSettings;
     } catch (e: any) {
-      console.error('[SupabaseDatabase] getSettings exception:', e.message);
+      console.log('[SupabaseDatabase] getSettings info:', e.message);
       return localDb.getSettings(userId);
     }
   }
@@ -637,13 +637,13 @@ class SupabaseDatabase {
           .upsert(rowsToUpsert, { onConflict: 'user_id,key' });
           
         if (error) {
-          console.error('[SupabaseDatabase] updateSettings error:', error.message);
+          console.log('[SupabaseDatabase] updateSettings info:', error.message);
         } else {
           console.log(`[SupabaseDatabase] Synced ${rowsToUpsert.length} settings to Supabase for ${targetUserId}.`);
         }
       }
     } catch (e: any) {
-      console.error('[SupabaseDatabase] updateSettings exception:', e.message);
+      console.log('[SupabaseDatabase] updateSettings info:', e.message);
     }
   }
 }

@@ -63,11 +63,11 @@ CREATE POLICY "Allow change on settings for owner or global" ON public.winloss_s
 
 -- 6. Seed initial DEFAULT values for the 'global' configuration settings
 INSERT INTO public.winloss_settings (user_id, key, value) VALUES
-    ('global', 'win_meme_url', '/uploads/rockman_win.png'),
+    ('global', 'win_meme_url', '/uploads/win.png'),
     ('global', 'win_meme_quote', '不愧是你！|Excellent work!|さすがですね！'),
-    ('global', 'loss_meme_url', '/uploads/zero_lose.png'),
+    ('global', 'loss_meme_url', '/uploads/lose.png'),
     ('global', 'loss_meme_quote', '投降輸一半|Mission Failed...|何者なんだ、これ...'),
-    ('global', 'draw_meme_url', '/uploads/tie_meme.png'),
+    ('global', 'draw_meme_url', '/uploads/tie.png'),
     ('global', 'draw_meme_quote', '沒輸沒贏|Double KO!|勝負つかず...'),
     ('global', 'lang', 'ja'),
     ('global', 'bgm_path', ''),

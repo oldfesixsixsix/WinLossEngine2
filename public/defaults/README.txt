@@ -26,8 +26,8 @@ Place your custom sound files directly inside the `./sounds/` directory. Must us
 Place your default meme images directly inside the `./images/` directory:
 請將您的梗圖放置至 `./images/` 資料夾中，並使用以下名稱：
 
-1. `rockman_win.png` - Used when a "WIN" outcome is recorded/selected (預設獲勝梗圖)
-2. `zero_lose.png`   - Used when a "LOSS" outcome is recorded/selected (預設失敗梗圖)
-3. `tie_meme.png`    - Used when a "DRAW" outcome is recorded/selected (預設平手梗圖)
+1. `win.png` - Used when a "WIN" outcome is recorded/selected (預設獲勝圖)
+2. `lose.png`   - Used when a "LOSS" outcome is recorded/selected (預設失敗圖)
+3. `tie.png`    - Used when a "DRAW" outcome is recorded/selected (預設平手圖)
 
 *(These will be copied automatically on server boot if not already present. You can replace them anytime with your own files!)*

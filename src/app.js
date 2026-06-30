@@ -6,6 +6,37 @@ const unclerealAuth = new UnclereалClient({
   authUrl: "https://auth-page-xi-ochre.vercel.app"
 });
 
+// Override login to handle iframe / top navigation beautifully
+unclerealAuth.login = function() {
+  const params = new URLSearchParams({ redirect_to: this.config.redirectTo });
+  const targetUrl = `${this.authUrl}?${params}`;
+  try {
+    if (window.self !== window.top) {
+      // In an iframe, try top-level redirect first
+      window.top.location.href = targetUrl;
+    } else {
+      window.location.href = targetUrl;
+    }
+  } catch (err) {
+    // Fallback if top-level redirect is blocked by iframe sandbox
+    window.location.href = targetUrl;
+  }
+};
+
+unclerealAuth.logout = function() {
+  const params = new URLSearchParams({ redirect_to: this.config.redirectTo });
+  const targetUrl = `${this.authUrl}/logout?${params}`;
+  try {
+    if (window.self !== window.top) {
+      window.top.location.href = targetUrl;
+    } else {
+      window.location.href = targetUrl;
+    }
+  } catch (err) {
+    window.location.href = targetUrl;
+  }
+};
+
 // Exception-safe, high-precision secureFetch wrapper
 async function secureFetch(url, options = {}) {
   const headers = options.headers || {};
@@ -58,7 +89,7 @@ const TRANSLATIONS = {
     winSe: "勝利SE音声:",
     lossSe: "敗北SE音声:",
     saveAssets: "素材ファイルをアップロードする",
-    day: "[ 日次 ]",
+    day: "日次",
     week: "週次",
     month: "月次",
     win: "勝利数",
@@ -110,8 +141,8 @@ const TRANSLATIONS = {
     submitSe: "登録・保存SE音:"
   },
   'zh-TW': {
-    headerStage: "ST-04: 梗圖戰場",
-    headerTitle: "輸贏紀錄系統",
+    headerStage: "ST-04: 戰場",
+    headerTitle: "輸贏",
     recPrompt: ">> 請選擇這次的決鬥結果 <<",
     recWinDesc: "勝利",
     recLossDesc: "敗北",
@@ -123,17 +154,17 @@ const TRANSLATIONS = {
     tab2Title: "決鬥歷史動態",
     tab4Title: "系統設定與自定義資源",
     lblLang: "語系設定:",
-    lblQuotes: "自定義迷因語錄 (用直線 | 隔開):",
+    lblQuotes: "自定義語錄 (用直線 | 隔開):",
     saveText: "儲存文字設定",
     lblAssets: "上傳/替換實體資源:",
-    winImg: "「贏」迷因梗圖:",
-    drawImg: "「平局」迷因梗圖:",
-    lossImg: "「輸」迷因梗圖:",
+    winImg: "「贏」圖:",
+    drawImg: "「平局」圖:",
+    lossImg: "「輸」圖:",
     bgmUrl: "自訂背景音樂:",
     winSe: "上傳獲勝音效:",
     lossSe: "上傳落敗音效:",
     saveAssets: "上傳並部署實體資源",
-    day: "[ 當日 ]",
+    day: "當日",
     week: "本週",
     month: "本月",
     win: "總贏次數",
@@ -142,9 +173,9 @@ const TRANSLATIONS = {
     winRatio: "勝率分佈",
     victories: "獲勝次數",
     defeats: "落敗次數",
-    statusWin: "不愧是你！絕好調",
-    statusLoss: "投降輸一半！任務失敗",
-    statusEqual: "沒輸沒贏！五五開",
+    statusWin: "還有誰？",
+    statusLoss: "站、站不起來了...",
+    statusEqual: "就先維持現狀吧",
     toastTitle: "偵測到 PWA: 要安裝嗎？",
     toastBody: "將輸贏紀錄器新增至您的主螢幕！",
     install: "安裝",
@@ -185,8 +216,8 @@ const TRANSLATIONS = {
     submitSe: "登錄提交儲存音效:"
   },
   'zh-CN': {
-    headerStage: "ST-04: 梗图战场",
-    headerTitle: "输赢纪录系统",
+    headerStage: "ST-04: 战场",
+    headerTitle: "输赢",
     recPrompt: ">> 请选择这次的决斗结果 <<",
     recWinDesc: "胜利",
     recLossDesc: "败北",
@@ -201,14 +232,14 @@ const TRANSLATIONS = {
     lblQuotes: "自定义迷因语录 (用直线 | 隔开):",
     saveText: "保存文字设定",
     lblAssets: "上传/替换实体资源:",
-    winImg: "「赢」迷因梗图:",
-    drawImg: "「平局」迷因梗图:",
-    lossImg: "「输」迷因梗图:",
+    winImg: "「赢」图:",
+    drawImg: "「平局」图:",
+    lossImg: "「输」图:",
     bgmUrl: "自定背景音乐:",
     winSe: "上传获胜音效:",
     lossSe: "上传落败音效:",
     saveAssets: "上传并部署实体资源",
-    day: "[ 当日 ]",
+    day: "当日",
     week: "本周",
     month: "本月",
     win: "总赢次数",
@@ -217,9 +248,9 @@ const TRANSLATIONS = {
     winRatio: "胜率分布",
     victories: "获胜次数",
     defeats: "落败次数",
-    statusWin: "不愧是你！绝好调",
-    statusLoss: "投降输一半！任务失败",
-    statusEqual: "没输没赢！五开",
+    statusWin: "绝好调",
+    statusLoss: "站、站不起來了...",
+    statusEqual: "五开",
     toastTitle: "侦测到 PWA: 要安装吗？",
     toastBody: "将输赢纪录器新增至您的主屏幕！",
     install: "安装",
@@ -260,7 +291,7 @@ const TRANSLATIONS = {
     submitSe: "登录提交保存音效:"
   },
   en: {
-    headerStage: "ST-04: MEME ARENA",
+    headerStage: "ST-04: ARENA",
     headerTitle: "WIN/LOSS Tracker",
     recPrompt: ">> SELECT YOUR DUEL STATE <<",
     recWinDesc: "VICTORY",
@@ -283,7 +314,7 @@ const TRANSLATIONS = {
     winSe: "Upload Win Sound (SE):",
     lossSe: "Upload Loss Sound (SE):",
     saveAssets: "UPLOAD AND DEPLOY ASSETS",
-    day: "[ DAILY ]",
+    day: "DAILY",
     week: "WEEKLY",
     month: "MONTHLY",
     win: "TOTAL WINS",
@@ -293,8 +324,8 @@ const TRANSLATIONS = {
     victories: "VICTORIES",
     defeats: "DEFEATS",
     statusWin: "Outstanding! Unbeatable!",
-    statusLoss: "Mission Failed! Try Again!",
-    statusEqual: "Even Duel! Tie Play!",
+    statusLoss: "Continue? 9...8...7...",
+    statusEqual: "EParadox Detected.",
     toastTitle: "PWA DETECTED: INSTALL?",
     toastBody: "Add Win/Loss Tracker to your home screen!",
     install: "INSTALL",
