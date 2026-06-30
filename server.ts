@@ -471,7 +471,7 @@ class SupabaseDatabase {
     }
     try {
       let query = supabase
-        .from('records')
+        .from('winloss_records')
         .select('*')
         .order('created_at', { ascending: false });
       
@@ -499,7 +499,7 @@ class SupabaseDatabase {
     }
     try {
       let query = supabase
-        .from('records')
+        .from('winloss_records')
         .select('*')
         .eq('id', id);
       
@@ -533,7 +533,7 @@ class SupabaseDatabase {
       };
       
       const { data, error } = await supabase
-        .from('records')
+        .from('winloss_records')
         .insert(recordToInsert)
         .select();
         
@@ -554,7 +554,7 @@ class SupabaseDatabase {
     }
     try {
       let query = supabase
-        .from('records')
+        .from('winloss_records')
         .delete()
         .eq('id', id);
         
@@ -584,7 +584,7 @@ class SupabaseDatabase {
     try {
       // 1. Fetch global settings
       const { data: globalData, error: globalErr } = await supabase
-        .from('settings')
+        .from('winloss_settings')
         .select('key, value')
         .eq('user_id', 'global');
         
@@ -599,7 +599,7 @@ class SupabaseDatabase {
       // 2. Fetch user overrides
       if (userId) {
         const { data: userData, error: userErr } = await supabase
-          .from('settings')
+          .from('winloss_settings')
           .select('key, value')
           .eq('user_id', userId);
           
@@ -633,7 +633,7 @@ class SupabaseDatabase {
       
       if (rowsToUpsert.length > 0) {
         const { error } = await supabase
-          .from('settings')
+          .from('winloss_settings')
           .upsert(rowsToUpsert, { onConflict: 'user_id,key' });
           
         if (error) {
