@@ -6,7 +6,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./win-loss-data:/app/data
+      - ./default:/app/data
       # Optional: Mount your customized defaults folder to override pre-installed assets directly from host
       # - ./defaults:/app/defaults
     environment:

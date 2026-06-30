@@ -1767,12 +1767,12 @@ function playSynthesizedSubmitSaveSound() {
 // Play custom sound files if present, otherwise trigger synth oscillators
 function playResultTheme(isWin) {
   if (isWin) {
-    const chosenPath = backendSettings.win_sound_path || '/defaults/sounds/win.mp3';
+    const chosenPath = backendSettings.win_sound_path || '/defaults/sounds/winloss.mp3';
     const audio = new Audio(chosenPath);
     audio.volume = 0.55;
     audio.play().catch(() => playSynthesizedWinSound());
   } else {
-    const chosenPath = backendSettings.loss_sound_path || '/defaults/sounds/loss.mp3';
+    const chosenPath = backendSettings.loss_sound_path || '/defaults/sounds/winloss.mp3';
     const audio = new Audio(chosenPath);
     audio.volume = 0.55;
     audio.play().catch(() => playSynthesizedLossSound());

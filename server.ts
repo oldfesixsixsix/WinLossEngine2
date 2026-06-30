@@ -216,12 +216,10 @@ class LocalJsonDatabase {
       const extTie = fs.existsSync(path.join(ASSETS_DIR, 'tie.jpg')) ? 'tie.jpg' : 'tie.png';
 
       const extBgm = fs.existsSync(path.join(ASSETS_DIR, 'bgm.mp3')) ? '/uploads/bgm.mp3' : '';
-      const extWinSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) 
-        ? '/uploads/winloss.mp3' 
-        : (fs.existsSync(path.join(ASSETS_DIR, 'win.mp3')) ? '/uploads/win.mp3' : '');
-      const extLossSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) 
-        ? '/uploads/winloss.mp3' 
-        : (fs.existsSync(path.join(ASSETS_DIR, 'loss.mp3')) ? '/uploads/loss.mp3' : '');
+      const extWinSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) ? '/uploads/winloss.mp3' : '';
+      const extLossSound = fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3')) ? '/uploads/winloss.mp3' : '';
+      const extTabSound = fs.existsSync(path.join(ASSETS_DIR, 'tab.mp3')) ? '/uploads/tab.mp3' : '';
+      const extSubmitSound = fs.existsSync(path.join(ASSETS_DIR, 'submit.mp3')) ? '/uploads/submit.mp3' : '';
 
       const defaultSettings = [
         { key: 'win_meme_url', value: `/uploads/${extWin}` },
@@ -233,7 +231,9 @@ class LocalJsonDatabase {
         { key: 'lang', value: 'ja' },
         { key: 'bgm_path', value: extBgm },
         { key: 'win_sound_path', value: extWinSound },
-        { key: 'loss_sound_path', value: extLossSound }
+        { key: 'loss_sound_path', value: extLossSound },
+        { key: 'tab_sound_path', value: extTabSound },
+        { key: 'submit_sound_path', value: extSubmitSound }
       ];
       const settingsObj: Record<string, string> = {};
       defaultSettings.forEach(s => {
@@ -364,6 +364,44 @@ class LocalJsonDatabase {
     return false;
   }
 
+  private applyDynamicSettingsDefaults(settings: Record<string, string>): Record<string, string> {
+    const copy = { ...settings };
+    
+    // Dynamic defaults for images
+    if (fs.existsSync(path.join(ASSETS_DIR, 'win.jpg'))) {
+      if (!copy['win_meme_url'] || copy['win_meme_url'].endsWith('win.png')) {
+        copy['win_meme_url'] = '/uploads/win.jpg';
+      }
+    }
+    if (fs.existsSync(path.join(ASSETS_DIR, 'loss.jpg'))) {
+      if (!copy['loss_meme_url'] || copy['loss_meme_url'].endsWith('loss.png')) {
+        copy['loss_meme_url'] = '/uploads/loss.jpg';
+      }
+    }
+    if (fs.existsSync(path.join(ASSETS_DIR, 'tie.jpg'))) {
+      if (!copy['draw_meme_url'] || copy['draw_meme_url'].endsWith('tie.png')) {
+        copy['draw_meme_url'] = '/uploads/tie.jpg';
+      }
+    }
+
+    // Dynamic defaults for audios
+    if (fs.existsSync(path.join(ASSETS_DIR, 'bgm.mp3')) && !copy['bgm_path']) {
+      copy['bgm_path'] = '/uploads/bgm.mp3';
+    }
+    if (fs.existsSync(path.join(ASSETS_DIR, 'winloss.mp3'))) {
+      if (!copy['win_sound_path']) copy['win_sound_path'] = '/uploads/winloss.mp3';
+      if (!copy['loss_sound_path']) copy['loss_sound_path'] = '/uploads/winloss.mp3';
+    }
+    if (fs.existsSync(path.join(ASSETS_DIR, 'tab.mp3')) && !copy['tab_sound_path']) {
+      copy['tab_sound_path'] = '/uploads/tab.mp3';
+    }
+    if (fs.existsSync(path.join(ASSETS_DIR, 'submit.mp3')) && !copy['submit_sound_path']) {
+      copy['submit_sound_path'] = '/uploads/submit.mp3';
+    }
+
+    return copy;
+  }
+
   getSettings(userId?: string): Record<string, string> {
     let globalSettings: Record<string, string> = {};
     try {
@@ -373,21 +411,21 @@ class LocalJsonDatabase {
       }
     } catch (e) {}
 
-    if (!userId) {
-      return globalSettings;
+    let finalSettings = { ...globalSettings };
+
+    if (userId) {
+      try {
+        if (fs.existsSync(this.userSettingsFile)) {
+          const userSettingsData = fs.readFileSync(this.userSettingsFile, 'utf-8');
+          const userSettingsMap = JSON.parse(userSettingsData);
+          if (userSettingsMap[userId]) {
+            finalSettings = { ...globalSettings, ...userSettingsMap[userId] };
+          }
+        }
+      } catch (e) {}
     }
 
-    try {
-      if (fs.existsSync(this.userSettingsFile)) {
-        const userSettingsData = fs.readFileSync(this.userSettingsFile, 'utf-8');
-        const userSettingsMap = JSON.parse(userSettingsData);
-        if (userSettingsMap[userId]) {
-          return { ...globalSettings, ...userSettingsMap[userId] };
-        }
-      }
-    } catch (e) {}
-
-    return globalSettings;
+    return this.applyDynamicSettingsDefaults(finalSettings);
   }
 
   updateSettings(updates: Record<string, string>, userId?: string) {

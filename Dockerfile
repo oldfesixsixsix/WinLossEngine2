@@ -26,7 +26,6 @@ RUN npm ci --only=production
 
 # Copy compiled assets and server from builder phase
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/data ./data
 
 # Declare persistent data volume mount
 VOLUME ["/app/data"]
