@@ -7,7 +7,7 @@ const unclerealAuth = new UnclereалClient({
 });
 
 // Override login to handle iframe / top navigation beautifully
-unclerealAuth.login = function() {
+unclerealAuth.login = async function() {
   const session = this.getSession();
   if (session && session.user) {
     const alertMsg = 
@@ -15,7 +15,7 @@ unclerealAuth.login = function() {
       currentLang === 'zh-CN' ? "您已处于登录状态，请先登出再切换账号。" :
       currentLang === 'ja' ? "すでにログインしています。別のアカウントに切り替えるには、まずログアウトしてください。" :
       "You are already logged in. Please log out first to switch accounts.";
-    alert(alertMsg);
+    await showRetroAlert(getAlertTitle(), alertMsg);
     return;
   }
   // Clear guest mode if switching to real login
@@ -74,6 +74,94 @@ async function secureFetch(url, options = {}) {
   return fetch(url, {
     ...options,
     headers: currentHeaders
+  });
+}
+
+// Retro Custom Dialog Modal Helpers
+function getAlertTitle() {
+  return currentLang === 'zh-TW' ? "系統提示" : 
+         currentLang === 'zh-CN' ? "系统提示" :
+         currentLang === 'ja' ? "システム通知" :
+         "SYS_NOTIFICATION";
+}
+
+function showRetroConfirm(title, message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('retro-dialog-modal');
+    const titleEl = document.getElementById('retro-dialog-title');
+    const msgEl = document.getElementById('retro-dialog-message');
+    const okBtn = document.getElementById('retro-dialog-ok-btn');
+    const cancelBtn = document.getElementById('retro-dialog-cancel-btn');
+
+    if (!modal) {
+      resolve(confirm(message));
+      return;
+    }
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+
+    cancelBtn.classList.remove('hidden');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    function cleanup() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+    }
+
+    function onOk() {
+      cleanup();
+      resolve(true);
+    }
+
+    function onCancel() {
+      cleanup();
+      resolve(false);
+    }
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+  });
+}
+
+function showRetroAlert(title, message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('retro-dialog-modal');
+    const titleEl = document.getElementById('retro-dialog-title');
+    const msgEl = document.getElementById('retro-dialog-message');
+    const okBtn = document.getElementById('retro-dialog-ok-btn');
+    const cancelBtn = document.getElementById('retro-dialog-cancel-btn');
+
+    if (!modal) {
+      alert(message);
+      resolve();
+      return;
+    }
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+
+    cancelBtn.classList.add('hidden');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    function cleanup() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      okBtn.removeEventListener('click', onOk);
+    }
+
+    function onOk() {
+      cleanup();
+      resolve();
+    }
+
+    okBtn.addEventListener('click', onOk);
   });
 }
 
@@ -145,7 +233,7 @@ const TRANSLATIONS = {
     outcomeLoss: "敗北",
     noComments: "メモはありません。",
     deleteBtnText: "記録を削除する",
-    confirmDelete: "削除の確認：この決闘記録をSQLiteデータベースから永久に削除しますか？",
+    confirmDelete: "削除の確認：この決闘記録を永久に削除しますか？",
     alertDeleteFailure: "エラー：サーバーが削除リクエストを拒否しました。",
     noRecordsYet: "記録がまだありません。上のボタンから決闘結果を記録しましょう！",
     lightboxMeta: "決闘証拠アタッチメント",
@@ -220,7 +308,7 @@ const TRANSLATIONS = {
     outcomeLoss: "敗北",
     noComments: "無任何備註說明喔。",
     deleteBtnText: "刪除歷史紀錄",
-    confirmDelete: "確認消除：您確定要從 SQLite 資料庫中永久移除此筆決鬥紀錄嗎？",
+    confirmDelete: "確認消除：您確定要永久移除此筆決鬥紀錄嗎？",
     alertDeleteFailure: "操作失敗：伺服器拒絕了該筆紀錄的刪除請求。",
     noRecordsYet: "尚未登錄任何決鬥紀錄。請在上方登錄今日的輸贏吧！",
     lightboxMeta: "決鬥現場實體憑證",
@@ -295,7 +383,7 @@ const TRANSLATIONS = {
     outcomeLoss: "败北",
     noComments: "无任何备注说明喔。",
     deleteBtnText: "删除历史纪录",
-    confirmDelete: "确认消除：您确定要从 SQLite 数据库中永久移除此笔决斗纪录吗？",
+    confirmDelete: "确认消除：您确定要永久移除此笔决斗纪录吗？",
     alertDeleteFailure: "操作失败：服务器拒绝了该笔纪录的删除请求。",
     noRecordsYet: "尚未登录任何决斗纪录。请在上方登录今日的输赢吧！",
     lightboxMeta: "决斗现场实体凭证",
@@ -370,7 +458,7 @@ const TRANSLATIONS = {
     outcomeLoss: "DEFEATED",
     noComments: "No comments left.",
     deleteBtnText: "DELETE",
-    confirmDelete: "CONFIRM ELIMINATION: Erase this record from SQLite database permanently?",
+    confirmDelete: "CONFIRM ELIMINATION: Erase this record permanently?",
     alertDeleteFailure: "Failure: Server rejected deletion request.",
     noRecordsYet: "NO RECORDS RECORDED YET. GET YOUR DUEL STARTED ABOVE!",
     lightboxMeta: "RECORD ATTACHMENT",
@@ -516,7 +604,7 @@ function setupUnclerealAuth() {
 
         // Dynamic Database Subheader indicator
         const dbLabel = document.getElementById('header-sub-r');
-        if (dbLabel) dbLabel.innerText = "DATABASE: CLOUD SQL / UNCLEREAL";
+        if (dbLabel) dbLabel.innerText = "DATABASE IS GOOD / UNCLEREAL";
 
       } else if (guestId) {
         if (loggedInEl) loggedInEl.classList.remove('hidden');
@@ -1154,11 +1242,11 @@ function initMainEventBindings() {
         // Redirect to timeline Tab
         switchActiveTab('timeline');
       } else {
-        alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertRecordSavedError);
+        await showRetroAlert(getAlertTitle(), (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertRecordSavedError);
       }
     } catch (err) {
       console.error(err);
-      alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertRecordNetworkError);
+      await showRetroAlert(getAlertTitle(), (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertRecordNetworkError);
     } finally {
       const submitBtn = document.getElementById('btn-submit-record');
       submitBtn.disabled = false;
@@ -1220,11 +1308,11 @@ function initMainEventBindings() {
         backendSettings.loss_meme_quote = quoteLoss;
         applyLocalizationBundle();
         playSubmitSaveSound();
-        alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertTextSavedSuccess);
+        await showRetroAlert(getAlertTitle(), (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertTextSavedSuccess);
       }
     } catch (err) {
       console.error(err);
-      alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertTextSavedError);
+      await showRetroAlert(getAlertTitle(), (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertTextSavedError);
     }
   });
 
@@ -1247,19 +1335,19 @@ function initMainEventBindings() {
         const result = await safeParseJson(response);
         if (result) {
           playSubmitSaveSound();
-          alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsSuccess);
+          await showRetroAlert(getAlertTitle(), (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsSuccess);
           await loadSettingsFromServer();
           // Clear file selections
           assetsForm.reset();
         } else {
-          alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsReject);
+          await showRetroAlert(getAlertTitle(), (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsReject);
         }
       } else {
-        alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsReject);
+        await showRetroAlert(getAlertTitle(), (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsReject);
       }
     } catch (err) {
       console.error(err);
-      alert((TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsError);
+      await showRetroAlert(getAlertTitle(), (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).alertAssetsError);
     } finally {
       saveBtn.disabled = false;
       saveBtn.innerText = (TRANSLATIONS[currentLang] || TRANSLATIONS.ja).saveAssets;
@@ -1476,14 +1564,15 @@ function renderTimelineLayout() {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const id = btn.getAttribute('data-id');
-      if (confirm(dictionary.confirmDelete)) {
+      const confirmed = await showRetroConfirm(getAlertTitle(), dictionary.confirmDelete);
+      if (confirmed) {
         try {
           const res = await secureFetch(`/api/records/${id}`, { method: 'DELETE' });
           if (res.ok) {
             playSynthesizedLossSound();
             refreshRecords();
           } else {
-            alert(dictionary.alertDeleteFailure);
+            await showRetroAlert(getAlertTitle(), dictionary.alertDeleteFailure);
           }
         } catch (e) {
           console.error(e);

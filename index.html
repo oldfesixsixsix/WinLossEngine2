@@ -426,6 +426,24 @@
       </div>
     </div>
 
+    <!-- Retro Custom Dialog Modal for alerts and confirmations -->
+    <div id="retro-dialog-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden z-[10001] justify-center items-center p-4">
+      <div class="relative w-full max-w-sm border-4 border-double border-[#ffffff] bg-[#111317] p-4 flex flex-col space-y-4 shadow-[0_0_15px_rgba(255,255,255,0.25)]">
+        <!-- Dialogue Header -->
+        <div class="flex items-center gap-1.5 border-b border-[#3b3f46] pb-1.5">
+          <span class="text-xs text-[#ffffff]">💬</span>
+          <span id="retro-dialog-title" class="text-[9px] font-bold text-white uppercase tracking-widest font-mono">SYS_ALERT: DETECTED</span>
+        </div>
+        <!-- Dialogue Message -->
+        <p id="retro-dialog-message" class="text-[#cfd3dc] text-[10px] leading-relaxed font-sans text-center py-2 px-1"></p>
+        <!-- Dialogue Buttons -->
+        <div class="flex justify-center gap-4 pt-1">
+          <button id="retro-dialog-cancel-btn" class="pixel-btn text-[9px] px-4 py-1.5 font-bold uppercase">CANCEL</button>
+          <button id="retro-dialog-ok-btn" class="pixel-btn text-[9px] px-4 py-1.5 font-bold uppercase">OK</button>
+        </div>
+      </div>
+    </div>
+
     <!-- PWA Installation Toast notification -->
     <div id="pwa-toast" class="fixed bottom-20 left-4 right-4 bg-[#111317] border-2 border-neon-cyan p-3 z-50 rounded flex justify-between items-center transition-all opacity-0 pointer-events-none transform translate-y-2 max-w-sm mx-auto">
       <div>
