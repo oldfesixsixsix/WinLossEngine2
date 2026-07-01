@@ -11,19 +11,36 @@ import { createClient } from '@supabase/supabase-js';
 dotenv.config();
 
 let supabase: any = null;
+let supabaseInitError: any = null;
 
 function getSupabase(): any {
   if (supabase) return supabase;
   const url = process.env.VITE_SUPABASE_URL || '';
   const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
-  if (url && anonKey && url.startsWith('http')) {
-    try {
-      supabase = createClient(url, anonKey);
-      console.log('[Supabase Client] Lazily initialized successfully with configured credentials.');
-      return supabase;
-    } catch (err: any) {
-      console.error('[Supabase Client] Failed to create client on lazy initialization:', err.message);
-    }
+  
+  if (!url) {
+    supabaseInitError = 'VITE_SUPABASE_URL is empty or undefined';
+    return null;
+  }
+  if (!anonKey) {
+    supabaseInitError = 'VITE_SUPABASE_ANON_KEY is empty or undefined';
+    return null;
+  }
+  if (!url.startsWith('http')) {
+    supabaseInitError = `VITE_SUPABASE_URL does not start with http: ${url}`;
+    return null;
+  }
+
+  try {
+    supabase = createClient(url, anonKey);
+    console.log('[Supabase Client] Lazily initialized successfully with configured credentials.');
+    return supabase;
+  } catch (err: any) {
+    supabaseInitError = {
+      message: err.message,
+      stack: err.stack
+    };
+    console.error('[Supabase Client] Failed to create client on lazy initialization:', err.message);
   }
   return null;
 }
@@ -735,6 +752,7 @@ app.get('/api/health', async (req, res) => {
     },
     supabase: {
       status: supabaseStatus,
+      init_error: supabaseInitError,
       error: supabaseError,
       test_query_success: testQuerySuccess
     }
