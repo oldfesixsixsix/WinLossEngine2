@@ -10,19 +10,22 @@ import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
-
 let supabase: any = null;
-if (supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http')) {
-  try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    console.log('[Supabase Client] Initialized successfully with configured credentials.');
-  } catch (err: any) {
-    console.error('[Supabase Client] Failed to create client:', err.message);
+
+function getSupabase(): any {
+  if (supabase) return supabase;
+  const url = process.env.VITE_SUPABASE_URL || '';
+  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+  if (url && anonKey && url.startsWith('http')) {
+    try {
+      supabase = createClient(url, anonKey);
+      console.log('[Supabase Client] Lazily initialized successfully with configured credentials.');
+      return supabase;
+    } catch (err: any) {
+      console.error('[Supabase Client] Failed to create client on lazy initialization:', err.message);
+    }
   }
-} else {
-  console.log('[Supabase Client] Credentials missing or invalid URL. Running with full local file-based storage fallback!');
+  return null;
 }
 
 const app = express();
@@ -465,12 +468,13 @@ const localDb = new LocalJsonDatabase();
 
 class SupabaseDatabase {
   async getRecords(userId?: string): Promise<any[]> {
-    if (!supabase) {
+    const client = getSupabase();
+    if (!client) {
       console.log('[SupabaseDatabase] Missing client. Using local database.');
       return localDb.getRecords(userId);
     }
     try {
-      let query = supabase
+      let query = client
         .from('winloss_records')
         .select('*')
         .order('created_at', { ascending: false });
@@ -494,11 +498,12 @@ class SupabaseDatabase {
   }
 
   async getRecordById(id: number, userId?: string): Promise<any> {
-    if (!supabase) {
+    const client = getSupabase();
+    if (!client) {
       return localDb.getRecordById(id, userId);
     }
     try {
-      let query = supabase
+      let query = client
         .from('winloss_records')
         .select('*')
         .eq('id', id);
@@ -521,7 +526,8 @@ class SupabaseDatabase {
   }
 
   async addRecord(type: string, reason: string, image_path: string | null, userId?: string): Promise<any> {
-    if (!supabase) {
+    const client = getSupabase();
+    if (!client) {
       const result = await localDb.addRecord(type, reason, image_path, userId);
       return { ...result, _supabase_status: 'not_configured' };
     }
@@ -533,7 +539,7 @@ class SupabaseDatabase {
         user_id: userId || null
       };
       
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('winloss_records')
         .insert(recordToInsert)
         .select();
@@ -558,11 +564,12 @@ class SupabaseDatabase {
   }
 
   async deleteRecord(id: number, userId?: string): Promise<boolean> {
-    if (!supabase) {
+    const client = getSupabase();
+    if (!client) {
       return localDb.deleteRecord(id, userId);
     }
     try {
-      let query = supabase
+      let query = client
         .from('winloss_records')
         .delete()
         .eq('id', id);
@@ -587,12 +594,13 @@ class SupabaseDatabase {
 
   async getSettings(userId?: string): Promise<Record<string, string>> {
     const baseSettings = localDb.getSettings();
-    if (!supabase) {
+    const client = getSupabase();
+    if (!client) {
       return localDb.getSettings(userId);
     }
     try {
       // 1. Fetch global settings
-      const { data: globalData, error: globalErr } = await supabase
+      const { data: globalData, error: globalErr } = await client
         .from('winloss_settings')
         .select('key, value')
         .eq('user_id', 'global');
@@ -607,7 +615,7 @@ class SupabaseDatabase {
       
       // 2. Fetch user overrides
       if (userId) {
-        const { data: userData, error: userErr } = await supabase
+        const { data: userData, error: userErr } = await client
           .from('winloss_settings')
           .select('key, value')
           .eq('user_id', userId);
@@ -629,7 +637,8 @@ class SupabaseDatabase {
 
   async updateSettings(updates: Record<string, string>, userId?: string): Promise<void> {
     localDb.updateSettings(updates, userId);
-    if (!supabase) {
+    const client = getSupabase();
+    if (!client) {
       return;
     }
     const targetUserId = userId || 'global';
@@ -641,7 +650,7 @@ class SupabaseDatabase {
       }));
       
       if (rowsToUpsert.length > 0) {
-        const { error } = await supabase
+        const { error } = await client
           .from('winloss_settings')
           .upsert(rowsToUpsert, { onConflict: 'user_id,key' });
           
@@ -688,11 +697,12 @@ app.get('/api/health', async (req, res) => {
   let supabaseError = null;
   let testQuerySuccess = false;
 
-  if (supabase) {
+  const client = getSupabase();
+  if (client) {
     supabaseStatus = 'initialized';
     try {
       // Perform a minimal fast query to test the connection and RLS policy compatibility
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('winloss_records')
         .select('id')
         .limit(1);

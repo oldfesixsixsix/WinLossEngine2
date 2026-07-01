@@ -121,15 +121,15 @@ console.log(`[X4 Retro Engine] running at http://localhost:${PORT}`);
 如果您已經建立了表格，請**不要刪除它**，只需在 Supabase 專案的 **SQL Editor** 貼上並執行以下 SQL 命令。這會安全地將欄位轉為 `text` 類型，並升級 RLS 比對政策，不丟失現有資料：
 
 ```sql
--- 1. 安全地將 user_id 轉為 text 類型，相容客製化 ID 與 guest_xxx 字串
-ALTER TABLE public.winloss_records ALTER COLUMN user_id TYPE text USING user_id::text;
-
--- 2. 刪除原有的舊 RLS 政策
+-- 1. 刪除原有的舊 RLS 政策 (必須最先執行，否則 PostgreSQL 會因政策依賴該欄位而報錯 0A000)
 DROP POLICY IF EXISTS "Allow read access to owner or guests" ON public.winloss_records;
 DROP POLICY IF EXISTS "Allow insert access to anyone" ON public.winloss_records;
 DROP POLICY IF EXISTS "Allow delete access to owners or guests" ON public.winloss_records;
 
--- 3. 建立相容的 RLS 政策 (明確將 auth.uid() 強制定型為 text 來比對 text 型態的 user_id)
+-- 2. 安全地將 user_id 轉為 text 類型，相容客製化 ID 與 guest_xxx 字串
+ALTER TABLE public.winloss_records ALTER COLUMN user_id TYPE text USING user_id::text;
+
+-- 3. 重新建立相容的 RLS 政策 (明確將 auth.uid() 強制定型為 text 來比對 text 型態的 user_id)
 CREATE POLICY "Allow read access to owner or guests" ON public.winloss_records 
     FOR SELECT USING ((user_id IS NULL) OR (auth.uid()::text = user_id));
 

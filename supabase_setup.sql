@@ -1,9 +1,14 @@
 -- =========================================================================
 -- 💡 熱修復指引 (如果您已經建立過表格，請直接在 Supabase SQL Editor 執行以下這段熱修復指令即可)：
--- ALTER TABLE public.winloss_records ALTER COLUMN user_id TYPE text USING user_id::text;
+-- -- 先刪除依賴 user_id 欄位的原有 RLS 政策，避免出現 0A000 cannot alter type of a column used in a policy definition 錯誤
 -- DROP POLICY IF EXISTS "Allow read access to owner or guests" ON public.winloss_records;
 -- DROP POLICY IF EXISTS "Allow insert access to anyone" ON public.winloss_records;
 -- DROP POLICY IF EXISTS "Allow delete access to owners or guests" ON public.winloss_records;
+-- 
+-- -- 接著安全地將 user_id 改成 text 類型
+-- ALTER TABLE public.winloss_records ALTER COLUMN user_id TYPE text USING user_id::text;
+-- 
+-- -- 最後重新建立並套用正確型態轉換的比對政策
 -- CREATE POLICY "Allow read access to owner or guests" ON public.winloss_records FOR SELECT USING ((user_id IS NULL) OR (auth.uid()::text = user_id));
 -- CREATE POLICY "Allow insert access to anyone" ON public.winloss_records FOR INSERT WITH CHECK ((user_id IS NULL) OR (auth.uid()::text = user_id));
 -- CREATE POLICY "Allow delete access to owners or guests" ON public.winloss_records FOR DELETE USING ((user_id IS NULL) OR (auth.uid()::text = user_id));
