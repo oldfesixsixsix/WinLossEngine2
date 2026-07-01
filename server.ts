@@ -7,6 +7,8 @@ import { createServer as createViteServer } from 'vite';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
+
 
 dotenv.config();
 
@@ -16,14 +18,14 @@ let supabaseInitError: any = null;
 function getSupabase(): any {
   if (supabase) return supabase;
   const url = process.env.VITE_SUPABASE_URL || '';
-  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
   
   if (!url) {
     supabaseInitError = 'VITE_SUPABASE_URL is empty or undefined';
     return null;
   }
-  if (!anonKey) {
-    supabaseInitError = 'VITE_SUPABASE_ANON_KEY is empty or undefined';
+  if (!key) {
+    supabaseInitError = 'Both SUPABASE_SERVICE_ROLE_KEY and VITE_SUPABASE_ANON_KEY are empty or undefined';
     return null;
   }
   if (!url.startsWith('http')) {
@@ -32,8 +34,12 @@ function getSupabase(): any {
   }
 
   try {
-    supabase = createClient(url, anonKey);
-    console.log('[Supabase Client] Lazily initialized successfully with configured credentials.');
+    supabase = createClient(url, key, {
+      realtime: {
+        transport: ws as any
+      }
+    });
+    console.log(`[Supabase Client] Lazily initialized successfully with ${process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Service Role Key' : 'Anon Key'}.`);
     return supabase;
   } catch (err: any) {
     supabaseInitError = {
