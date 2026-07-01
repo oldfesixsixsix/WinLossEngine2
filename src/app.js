@@ -778,17 +778,8 @@ function applyLocalizationBundle() {
             <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
               <div>
                 <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="text-white font-bold">歡迎來到 洛克人 X4 戰役決鬥終端紀錄系統！</span>
+                <span class="text-white font-bold">歡迎來到 X4 戰役決鬥終端！</span>
                 這是一個融合 16/32 位元復古大型街機美學（CRT 螢幕掃描濾鏡、Capcom 經典冷白色調、動態 Chiptune 音效合成器）與全新雲端/本地多登入身分管理的決鬥追蹤裝置。
-              </div>
-
-              <div>
-                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="font-bold text-white">雙核模式選擇：</span>
-                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
-                  <li><strong class="text-neon-cyan">雲端認證（Google / GitHub 認證）</strong>：儲存在 Supabase 高速雲端中，您的對決戰績、自訂迷因語錄與上傳的獨創音效皆能永久同步跟隨帳號，換裝置不遺失。</li>
-                  <li><strong class="text-[#ffd700]">極速訪客模式（Transient Guest）</strong>：零門檻點選，完美排除 IDP 註冊繁雜步驟。我們利用 <span class="text-[#ffd700] underline">SessionStorage</span> 連接機制，<strong class="text-white">只要關閉瀏覽器網頁分頁，該次對決數據將即刻徹底釋放消失！</strong>（適合即席測試）</li>
-                </ul>
               </div>
 
               <div>
@@ -815,17 +806,8 @@ function applyLocalizationBundle() {
             <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
               <div>
                 <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="text-white font-bold">欢迎来到 洛克人 X4 战役决斗终端纪录系统！</span>
+                <span class="text-white font-bold">欢迎来到 X4 战役决斗终端！</span>
                 这是一个融合 16/32 位元复古大型街机美学（CRT 屏幕扫描滤镜、Capcom 经典冷白色调、动态 Chiptune 音效合成器）与全新云端/本地多登录身份管理的决斗追踪装置。
-              </div>
-
-              <div>
-                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="font-bold text-white">双核模式选择：</span>
-                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
-                  <li><strong class="text-neon-cyan">云端认证（Google / GitHub 认证）</strong>：储存在 Supabase 高速云端中，您的对决战绩、自订迷因语录与上传的独创音效皆能永久同步跟随帐号，换装置不遗失。</li>
-                  <li><strong class="text-[#ffd700]">极速 guest 模式（Transient Guest）</strong>：零门槛点选，完美排除 IDP 注册繁杂步骤。我们利用 <span class="text-[#ffd700] underline">SessionStorage</span> 连接机制，<strong class="text-white">只要关闭浏览器网页分页，该次对决数据将即刻彻底释放消失！</strong>（适合即席测试）</li>
-                </ul>
               </div>
 
               <div>
@@ -852,17 +834,8 @@ function applyLocalizationBundle() {
             <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
               <div>
                 <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="text-white font-bold">ロックマンX4 決闘記録ターミナルシステムへようこそ！</span>
+                <span class="text-white font-bold">X4 決闘記録ターミナルシステムへようこそ！</span>
                 本システムは、16/32ビットのレトロなアーケード筐体の美学（CRTスキャンライン、カプコン風のクールな配色、リアルタイム音声シンセサイザー）と、高度なクラウド/ローカル認証管理を融合した決闘トラッカーです。
-              </div>
-
-              <div>
-                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="font-bold text-white">デュアル接続モードの選択：</span>
-                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
-                  <li><strong class="text-neon-cyan">クラウド認証 (Google / GitHub)</strong>：Supabaseクラウドにデータを安全に保存。対戦レコード、カスタムミームセリフ、カスタムSEなどが永続的に同期され、複数デバイスで利用可能です。</li>
-                  <li><strong class="text-[#ffd700]">クイックゲストモード (Transient Guest)</strong>：認証不要で即時に使用可能。<span class="text-[#ffd700] underline">SessionStorage</span>を利用しており、<strong class="text-white">ブラウザのタブを閉じると、すべての決闘記録は安全にかつ即時に消去されます！</strong>（ワンクリックテストに最適）</li>
-                </ul>
               </div>
 
               <div>
@@ -889,17 +862,8 @@ function applyLocalizationBundle() {
             <div class="space-y-3 text-[10px] leading-relaxed text-[#cfd3dc] font-sans">
               <div>
                 <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="text-white font-bold">Welcome to Rockman X4 Duel Combat Tracker Terminal!</span>
+                <span class="text-white font-bold">Welcome to X4 Duel Combat Tracker Terminal!</span>
                 This retro-styled application merges the aesthetic of 16/32-bit retro arcade terminals (CRT scanline filter, Capcom-inspired layout, customizable chiptune synthesizer) with modern multi-identity secure database configurations.
-              </div>
-
-              <div>
-                <span class="text-[11px] font-bold text-neon-cyan select-none">▶</span> 
-                <span class="font-bold text-white">Dual Verification Channel:</span>
-                <ul class="list-disc list-inside space-y-1.5 ml-1 mt-1 text-[#a4bdcf]">
-                  <li><strong class="text-neon-cyan">Cloud Sync (Google / GitHub OAuth)</strong>: Hosted dynamically via Supabase, saving your records, customized quote slates, and audio assets permanently across devices.</li>
-                  <li><strong class="text-[#ffd700]">Transient Guest Mode (Local-only)</strong>: Bypasses OAuth registration completely. Powered by <span class="text-[#ffd700] underline">SessionStorage</span>. <strong class="text-white">Once you close your browser tab, your battle transaction ledger is cleared immediately!</strong></li>
-                </ul>
               </div>
 
               <div>
