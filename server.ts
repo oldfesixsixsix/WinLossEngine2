@@ -522,7 +522,8 @@ class SupabaseDatabase {
 
   async addRecord(type: string, reason: string, image_path: string | null, userId?: string): Promise<any> {
     if (!supabase) {
-      return localDb.addRecord(type, reason, image_path, userId);
+      const result = await localDb.addRecord(type, reason, image_path, userId);
+      return { ...result, _supabase_status: 'not_configured' };
     }
     try {
       const recordToInsert = {
@@ -539,12 +540,20 @@ class SupabaseDatabase {
         
       if (error) {
         console.log('[SupabaseDatabase] addRecord info:', error.message);
-        return localDb.addRecord(type, reason, image_path, userId);
+        const result = await localDb.addRecord(type, reason, image_path, userId);
+        return { 
+          ...result, 
+          _supabase_status: 'error', 
+          _supabase_error: error.message,
+          _supabase_error_details: error.details,
+          _supabase_error_hint: error.hint
+        };
       }
-      return data ? data[0] : recordToInsert;
+      return data ? { ...data[0], _supabase_status: 'synced' } : { ...recordToInsert, _supabase_status: 'synced_partial' };
     } catch (e: any) {
       console.log('[SupabaseDatabase] addRecord info:', e.message);
-      return localDb.addRecord(type, reason, image_path, userId);
+      const result = await localDb.addRecord(type, reason, image_path, userId);
+      return { ...result, _supabase_status: 'exception', _supabase_error: e.message };
     }
   }
 
@@ -673,9 +682,53 @@ const upload = multer({ storage });
 
 // API Endpoints
 
-// GET health status check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// GET health status check with extensive Supabase diagnostic test
+app.get('/api/health', async (req, res) => {
+  let supabaseStatus = 'not_configured';
+  let supabaseError = null;
+  let testQuerySuccess = false;
+
+  if (supabase) {
+    supabaseStatus = 'initialized';
+    try {
+      // Perform a minimal fast query to test the connection and RLS policy compatibility
+      const { data, error } = await supabase
+        .from('winloss_records')
+        .select('id')
+        .limit(1);
+        
+      if (error) {
+        supabaseStatus = 'error';
+        supabaseError = {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        };
+      } else {
+        supabaseStatus = 'connected_ok';
+        testQuerySuccess = true;
+      }
+    } catch (err: any) {
+      supabaseStatus = 'exception';
+      supabaseError = err.message;
+    }
+  }
+
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    env: {
+      has_supabase_url: !!process.env.VITE_SUPABASE_URL,
+      has_supabase_anon_key: !!process.env.VITE_SUPABASE_ANON_KEY,
+      supabase_url_preview: process.env.VITE_SUPABASE_URL ? `${process.env.VITE_SUPABASE_URL.substring(0, 15)}...` : null
+    },
+    supabase: {
+      status: supabaseStatus,
+      error: supabaseError,
+      test_query_success: testQuerySuccess
+    }
+  });
 });
 
 // Helper to extract user_id from headers or query parameters for versatile OIDC / multi-tenant execution

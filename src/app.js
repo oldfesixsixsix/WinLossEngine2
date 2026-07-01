@@ -1131,6 +1131,18 @@ function initMainEventBindings() {
       });
 
       if (response.ok) {
+        // Intercept and print any Supabase sync failures to the developer console for easy debugging
+        try {
+          const resData = await response.clone().json();
+          if (resData && resData._supabase_status === 'error') {
+            console.error('[Supabase Sync Fallback] Note: Data saved to Local Storage fallback, but failed to sync to Supabase.', resData._supabase_error);
+            if (resData._supabase_error_details) console.warn('Details:', resData._supabase_error_details);
+            if (resData._supabase_error_hint) console.warn('Hint:', resData._supabase_error_hint);
+          } else if (resData && resData._supabase_status === 'not_configured') {
+            console.log('[Supabase] Running on Local Storage mode. VITE_SUPABASE_URL is not configured.');
+          }
+        } catch (err) {}
+
         // Play submit success chime and epic result sound
         playSubmitSaveSound();
         
